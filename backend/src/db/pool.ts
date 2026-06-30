@@ -3,10 +3,15 @@ import { env } from "../config/env";
 
 const { Pool } = pg;
 
+const isSupabaseConnection = env.databaseUrl.includes("supabase.co");
+
 export const pool = new Pool({
   connectionString: env.databaseUrl,
-  ssl:
-    env.nodeEnv === "production"
+  ssl: isSupabaseConnection
+    ? {
+        rejectUnauthorized: false,
+      }
+    : env.nodeEnv === "production"
       ? {
           rejectUnauthorized: false,
         }
