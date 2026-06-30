@@ -55,7 +55,19 @@ export type KybCase = {
   score: number;
   client: KybClient;
   documents: KybDocument[];
+  satListChecks: SatListCheck[];
   riskFactors: RiskFactor[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type SatListCheck = {
+  id: string;
+  caseId: string;
+  rfcSearched: string;
+  source: string;
+  result: "match" | "no_match" | "error";
+  referenceUrl: string;
+  rawMatch?: Record<string, unknown>;
+  checkedAt: string;
 };

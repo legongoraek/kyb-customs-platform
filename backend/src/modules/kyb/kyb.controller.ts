@@ -5,6 +5,7 @@ import {
 } from "./kyb.schemas";
 import { kybRepository } from "./kyb.repository";
 import { calculateKybRisk } from "./risk/riskEngine";
+import { satService } from "./sat/sat.service";
 
 export const createKybCase = async (req: Request, res: Response) => {
   const validation = createKybCaseSchema.safeParse(req.body);
@@ -262,6 +263,51 @@ export const approveKybCase = async (req: Request, res: Response) => {
     return res.status(500).json({
       ok: false,
       message: "Error al aprobar expediente KYB",
+    });
+  }
+};
+
+export const runSatListCheck = async (req: Request, res: Response) => {
+  try {
+    const kybCase = await kybRepository.findCaseById(req.params.id);
+
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
+
+    const result = await satService.checkRfcAgainstSatLists({
+      caseId: kybCase.id,
+      rfc: kybCase.client.rfc,
+    });
+
+    await kybRepository.createAuditLog({
+      caseId: kybCase.id,
+      action: "SAT_LIST_CHECK_EXECUTED",
+      entityType: "sat_list_check",
+      message: "Revisión contra listas fiscales SAT ejecutada.",
+      metadata: {
+        rfc: kybCase.client.rfc,
+        result: result.result,
+        riskLevel: result.riskLevel,
+        matches: result.entries.length,
+        checkIds: result.checkIds,
+      },
+    });
+
+    return res.json({
+      ok: true,
+      message: "Revisión SAT ejecutada correctamente",
+      data: result,
+    });
+  } catch (error) {
+    console.error("runSatListCheck error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al ejecutar revisión SAT",
     });
   }
 };

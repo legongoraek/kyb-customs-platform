@@ -15,6 +15,7 @@ const mapKybCaseRow = (row: any): KybCase => ({
     beneficialOwner: row.beneficial_owner || undefined,
   },
   documents: [],
+  satListChecks: [],
   riskFactors: [],
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -109,6 +110,27 @@ export const kybRepository = {
     );
 
     kybCase.documents = documentsResult.rows.map(mapDocumentRow);
+
+    const satChecksResult = await pool.query(
+      `
+      select *
+      from sat_list_checks
+      where case_id = $1
+      order by checked_at desc
+      `,
+      [id]
+    );
+
+    kybCase.satListChecks = satChecksResult.rows.map((row) => ({
+      id: row.id,
+      caseId: row.case_id,
+      rfcSearched: row.rfc_searched,
+      source: row.source,
+      result: row.result,
+      referenceUrl: row.reference_url,
+      rawMatch: row.raw_match || {},
+      checkedAt: row.checked_at,
+    }));
 
     const riskFactorsResult = await pool.query(
       `

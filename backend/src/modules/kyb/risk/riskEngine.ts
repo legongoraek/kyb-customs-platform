@@ -300,24 +300,100 @@ export const calculateKybRisk = (kybCase: KybCase) => {
     );
   }
 
-  /**
-   * 8. Placeholder SAT.
-   * En Paso 4 se reemplaza por resultados reales de listas fiscales.
-   */
-  riskFactors.push(
-    createRiskFactor({
-      code: "SAT_LIST_CHECK_PENDING",
-      label: "Revisión SAT pendiente",
-      description:
-        "Todavía no se ha ejecutado la revisión contra listas fiscales públicas del SAT.",
-      points: RISK_RULES.FISCAL_LIST_REVIEW_OLDER_THAN_3_MONTHS,
-      severity: "medium",
-      evidence: {
-        source: "SAT",
-        status: "pending",
-      },
-    })
-  );
+    /**
+     * 8. Revisión real contra listas SAT
+     */
+    const satChecks = kybCase.satListChecks || [];
+
+    if (satChecks.length === 0) {
+    riskFactors.push(
+        createRiskFactor({
+        code: "SAT_LIST_CHECK_PENDING",
+        label: "Revisión SAT pendiente",
+        description:
+            "Todavía no se ha ejecutado la revisión contra listas fiscales públicas del SAT.",
+        points: RISK_RULES.FISCAL_LIST_REVIEW_OLDER_THAN_3_MONTHS,
+        severity: "medium",
+        evidence: {
+            source: "SAT",
+            status: "pending",
+        },
+        })
+    );
+    } else {
+    const latestCheckDate = satChecks
+        .map((check) => new Date(check.checkedAt).getTime())
+        .sort((a, b) => b - a)[0];
+
+    const threeMonthsInMs = 1000 * 60 * 60 * 24 * 90;
+    const isOlderThanThreeMonths = Date.now() - latestCheckDate > threeMonthsInMs;
+
+    if (isOlderThanThreeMonths) {
+        riskFactors.push(
+        createRiskFactor({
+            code: "SAT_LIST_CHECK_OLDER_THAN_3_MONTHS",
+            label: "Revisión SAT vencida",
+            description:
+            "La revisión de listas fiscales SAT tiene más de 3 meses.",
+            points: RISK_RULES.FISCAL_LIST_REVIEW_OLDER_THAN_3_MONTHS,
+            severity: "medium",
+            evidence: {
+            latestCheckDate: new Date(latestCheckDate).toISOString(),
+            },
+        })
+        );
+    }
+
+    const satMatches = satChecks.filter((check) => check.result === "match");
+
+    for (const check of satMatches) {
+        const rawMatch = check.rawMatch || {};
+        const source = String(rawMatch.source || check.source);
+        const listType = String(rawMatch.listType || "");
+
+        const isCritical =
+        (source === "SAT_ART_69B" && listType === "definitivos") ||
+        source === "SAT_ART_69B_BIS";
+
+        if (isCritical) {
+        hasCriticalRisk = true;
+
+        riskFactors.push(
+            createRiskFactor({
+            code: "SAT_CRITICAL_MATCH",
+            label: "Coincidencia crítica en listas SAT",
+            description: `El RFC aparece en una lista fiscal crítica del SAT: ${source} / ${listType}.`,
+            points: RISK_RULES.SAT_LIST_MATCH_CRITICAL,
+            severity: "critical",
+            evidence: {
+                checkId: check.id,
+                source,
+                listType,
+                referenceUrl: check.referenceUrl,
+                rawMatch,
+            },
+            })
+        );
+        } else {
+        riskFactors.push(
+            createRiskFactor({
+            code: "SAT_REVIEW_MATCH",
+            label: "Coincidencia en listas SAT",
+            description: `El RFC aparece en una lista fiscal del SAT que requiere revisión: ${source} / ${listType}.`,
+            points: RISK_RULES.SAT_LIST_MATCH_REVIEW,
+            severity: "high",
+            evidence: {
+                checkId: check.id,
+                source,
+                listType,
+                referenceUrl: check.referenceUrl,
+                rawMatch,
+            },
+            })
+        );
+        }
+    }
+    }
 
   /**
    * 9. Riesgo crítico.
