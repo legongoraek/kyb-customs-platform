@@ -1,12 +1,9 @@
 import { Request, Response } from "express";
-import { randomUUID } from "crypto";
 import {
   addKybDocumentMetadataSchema,
   createKybCaseSchema,
 } from "./kyb.schemas";
-import { kybCases } from "./kyb.mock-data";
-import { KYB_CASE_STATUS } from "./kyb.constants";
-import { KybCase, KybDocument } from "./kyb.types";
+import { kybRepository } from "./kyb.repository";
 
 export const createKybCase = async (req: Request, res: Response) => {
   const validation = createKybCaseSchema.safeParse(req.body);
@@ -19,156 +16,224 @@ export const createKybCase = async (req: Request, res: Response) => {
     });
   }
 
-  const now = new Date().toISOString();
+  try {
+    const kybCase = await kybRepository.createCase(validation.data);
 
-  const newCase: KybCase = {
-    id: randomUUID(),
-    status: KYB_CASE_STATUS.DRAFT,
-    decision: null,
-    score: 0,
-    client: validation.data,
-    documents: [],
-    riskFactors: [],
-    createdAt: now,
-    updatedAt: now,
-  };
+    await kybRepository.createAuditLog({
+      caseId: kybCase.id,
+      action: "KYB_CASE_CREATED",
+      entityType: "kyb_case",
+      entityId: kybCase.id,
+      message: "Expediente KYB creado correctamente.",
+      metadata: {
+        rfc: kybCase.client.rfc,
+        legalName: kybCase.client.legalName,
+      },
+    });
 
-  kybCases.push(newCase);
+    return res.status(201).json({
+      ok: true,
+      message: "Expediente KYB creado correctamente",
+      data: kybCase,
+    });
+  } catch (error) {
+    console.error("createKybCase error:", error);
 
-  return res.status(201).json({
-    ok: true,
-    message: "Expediente KYB creado correctamente",
-    data: newCase,
-  });
+    return res.status(500).json({
+      ok: false,
+      message: "Error al crear expediente KYB",
+    });
+  }
 };
 
 export const getKybCases = async (_req: Request, res: Response) => {
-  return res.json({
-    ok: true,
-    data: kybCases,
-  });
+  try {
+    const cases = await kybRepository.findAllCases();
+
+    return res.json({
+      ok: true,
+      data: cases,
+    });
+  } catch (error) {
+    console.error("getKybCases error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al obtener expedientes KYB",
+    });
+  }
 };
 
 export const getKybCaseById = async (req: Request, res: Response) => {
-  const kybCase = kybCases.find((item) => item.id === req.params.id);
+  try {
+    const kybCase = await kybRepository.findCaseById(req.params.id);
 
-  if (!kybCase) {
-    return res.status(404).json({
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
+
+    return res.json({
+      ok: true,
+      data: kybCase,
+    });
+  } catch (error) {
+    console.error("getKybCaseById error:", error);
+
+    return res.status(500).json({
       ok: false,
-      message: "Expediente KYB no encontrado",
+      message: "Error al obtener expediente KYB",
     });
   }
-
-  return res.json({
-    ok: true,
-    data: kybCase,
-  });
 };
 
 export const addKybDocumentMetadata = async (req: Request, res: Response) => {
-  const kybCase = kybCases.find((item) => item.id === req.params.id);
+  try {
+    const kybCase = await kybRepository.findCaseById(req.params.id);
 
-  if (!kybCase) {
-    return res.status(404).json({
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
+
+    const validation = addKybDocumentMetadataSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({
+        ok: false,
+        message: "Metadata de documento inválida",
+        errors: validation.error.flatten(),
+      });
+    }
+
+    const expirationDate = validation.data.expirationDate;
+    const isExpired = expirationDate
+      ? new Date(expirationDate).getTime() < Date.now()
+      : false;
+
+    const document = await kybRepository.addDocumentMetadata({
+      caseId: kybCase.id,
+      type: validation.data.type,
+      status: isExpired ? "expired" : "uploaded",
+      issueDate: validation.data.issueDate,
+      expirationDate: validation.data.expirationDate,
+      extractedRfc: validation.data.extractedRfc?.trim().toUpperCase(),
+      extractedLegalName: validation.data.extractedLegalName?.trim().toUpperCase(),
+      extractedAddress: validation.data.extractedAddress?.trim(),
+      extractedRepresentative: validation.data.extractedRepresentative
+        ?.trim()
+        .toUpperCase(),
+      fileUrl: validation.data.fileUrl,
+    });
+
+    await kybRepository.createAuditLog({
+      caseId: kybCase.id,
+      action: "KYB_DOCUMENT_METADATA_ADDED",
+      entityType: "kyb_document",
+      entityId: document.id,
+      message: `Metadata registrada para documento ${document.type}.`,
+      metadata: {
+        documentType: document.type,
+        status: document.status,
+      },
+    });
+
+    return res.status(201).json({
+      ok: true,
+      message: "Metadata de documento registrada correctamente",
+      data: document,
+    });
+  } catch (error) {
+    console.error("addKybDocumentMetadata error:", error);
+
+    return res.status(500).json({
       ok: false,
-      message: "Expediente KYB no encontrado",
+      message: "Error al registrar metadata de documento",
     });
   }
-
-  const validation = addKybDocumentMetadataSchema.safeParse(req.body);
-
-  if (!validation.success) {
-    return res.status(400).json({
-      ok: false,
-      message: "Metadata de documento inválida",
-      errors: validation.error.flatten(),
-    });
-  }
-
-  const now = new Date().toISOString();
-
-  const expirationDate = validation.data.expirationDate;
-  const isExpired = expirationDate
-    ? new Date(expirationDate).getTime() < Date.now()
-    : false;
-
-  const document: KybDocument = {
-    id: randomUUID(),
-    caseId: kybCase.id,
-    type: validation.data.type,
-    status: isExpired ? "expired" : "uploaded",
-    issueDate: validation.data.issueDate,
-    expirationDate: validation.data.expirationDate,
-    extractedRfc: validation.data.extractedRfc?.trim().toUpperCase(),
-    extractedLegalName: validation.data.extractedLegalName?.trim().toUpperCase(),
-    extractedAddress: validation.data.extractedAddress?.trim(),
-    extractedRepresentative: validation.data.extractedRepresentative
-      ?.trim()
-      .toUpperCase(),
-    fileUrl: validation.data.fileUrl,
-    createdAt: now,
-  };
-
-  kybCase.documents.push(document);
-  kybCase.updatedAt = now;
-
-  return res.status(201).json({
-    ok: true,
-    message: "Metadata de documento registrada correctamente",
-    data: document,
-  });
 };
 
 export const runKybCheck = async (req: Request, res: Response) => {
-  const kybCase = kybCases.find((item) => item.id === req.params.id);
+  try {
+    const kybCase = await kybRepository.findCaseById(req.params.id);
 
-  if (!kybCase) {
-    return res.status(404).json({
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
+
+    return res.json({
+      ok: true,
+      message: "Validación KYB ejecutada",
+      data: {
+        id: kybCase.id,
+        score: kybCase.score,
+        decision: kybCase.decision,
+        riskFactors: kybCase.riskFactors,
+      },
+    });
+  } catch (error) {
+    console.error("runKybCheck error:", error);
+
+    return res.status(500).json({
       ok: false,
-      message: "Expediente KYB no encontrado",
+      message: "Error al ejecutar validación KYB",
     });
   }
-
-  return res.json({
-    ok: true,
-    message: "Validación KYB ejecutada",
-    data: {
-      id: kybCase.id,
-      score: kybCase.score,
-      decision: kybCase.decision,
-      riskFactors: kybCase.riskFactors,
-    },
-  });
 };
 
 export const approveKybCase = async (req: Request, res: Response) => {
-  const kybCase = kybCases.find((item) => item.id === req.params.id);
+  try {
+    const kybCase = await kybRepository.findCaseById(req.params.id);
 
-  if (!kybCase) {
-    return res.status(404).json({
-      ok: false,
-      message: "Expediente KYB no encontrado",
-    });
-  }
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
 
-  if (kybCase.decision !== "safe") {
-    return res.status(409).json({
-      ok: false,
-      message:
-        "No se puede aprobar el expediente porque no tiene decisión safe.",
-      data: {
+    if (kybCase.decision !== "safe") {
+      return res.status(409).json({
+        ok: false,
+        message:
+          "No se puede aprobar el expediente porque no tiene decisión safe.",
+        data: {
+          decision: kybCase.decision,
+          score: kybCase.score,
+        },
+      });
+    }
+
+    await kybRepository.createAuditLog({
+      caseId: kybCase.id,
+      action: "KYB_CASE_APPROVAL_ATTEMPTED",
+      entityType: "kyb_case",
+      entityId: kybCase.id,
+      message: "Intento de aprobación de expediente KYB.",
+      metadata: {
         decision: kybCase.decision,
         score: kybCase.score,
       },
     });
+
+    return res.json({
+      ok: true,
+      message: "Expediente aprobado",
+      data: kybCase,
+    });
+  } catch (error) {
+    console.error("approveKybCase error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al aprobar expediente KYB",
+    });
   }
-
-  kybCase.status = KYB_CASE_STATUS.APPROVED;
-  kybCase.updatedAt = new Date().toISOString();
-
-  return res.json({
-    ok: true,
-    message: "Expediente aprobado",
-    data: kybCase,
-  });
 };
