@@ -217,4 +217,115 @@ export const kybRepository = {
       ]
     );
   },
+
+  async saveRiskResult(input: {
+    caseId: string;
+    score: number;
+    decision: string;
+    canApprove: boolean;
+    explanation: string;
+    riskFactors: {
+      code: string;
+      label: string;
+      description: string;
+      points: number;
+      severity: string;
+      evidence?: Record<string, unknown>;
+    }[];
+  }) {
+    const client = await pool.connect();
+
+    try {
+      await client.query("begin");
+
+      const riskScoreResult = await client.query(
+        `
+        insert into risk_scores (
+          case_id,
+          score,
+          decision,
+          can_approve,
+          explanation
+        )
+        values ($1, $2, $3, $4, $5)
+        returning *
+        `,
+        [
+          input.caseId,
+          input.score,
+          input.decision,
+          input.canApprove,
+          input.explanation,
+        ]
+      );
+
+      const riskScoreId = riskScoreResult.rows[0].id;
+
+      await client.query(
+        `
+        delete from risk_factors
+        where case_id = $1
+        `,
+        [input.caseId]
+      );
+
+      for (const factor of input.riskFactors) {
+        await client.query(
+          `
+          insert into risk_factors (
+            case_id,
+            risk_score_id,
+            code,
+            label,
+            description,
+            points,
+            severity,
+            evidence
+          )
+          values ($1, $2, $3, $4, $5, $6, $7, $8)
+          `,
+          [
+            input.caseId,
+            riskScoreId,
+            factor.code,
+            factor.label,
+            factor.description,
+            factor.points,
+            factor.severity,
+            JSON.stringify(factor.evidence || {}),
+          ]
+        );
+      }
+
+      await client.query(
+        `
+        update kyb_cases
+        set
+          score = $1,
+          decision = $2,
+          status = $3,
+          updated_at = now()
+        where id = $4
+        `,
+        [
+          input.score,
+          input.decision,
+          input.decision === "safe" ? "draft" : input.decision,
+          input.caseId,
+        ]
+      );
+
+      await client.query("commit");
+
+      return {
+        riskScoreId,
+      };
+    } catch (error) {
+      await client.query("rollback");
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
+
 };

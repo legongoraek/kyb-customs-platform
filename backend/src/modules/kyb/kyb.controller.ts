@@ -4,6 +4,7 @@ import {
   createKybCaseSchema,
 } from "./kyb.schemas";
 import { kybRepository } from "./kyb.repository";
+import { calculateKybRisk } from "./risk/riskEngine";
 
 export const createKybCase = async (req: Request, res: Response) => {
   const validation = createKybCaseSchema.safeParse(req.body);
@@ -168,14 +169,41 @@ export const runKybCheck = async (req: Request, res: Response) => {
       });
     }
 
+    const riskResult = calculateKybRisk(kybCase);
+
+    const savedRisk = await kybRepository.saveRiskResult({
+      caseId: kybCase.id,
+      score: riskResult.score,
+      decision: riskResult.decision,
+      canApprove: riskResult.canApprove,
+      explanation: riskResult.explanation,
+      riskFactors: riskResult.riskFactors,
+    });
+
+    await kybRepository.createAuditLog({
+      caseId: kybCase.id,
+      action: "KYB_RISK_CHECK_EXECUTED",
+      entityType: "risk_score",
+      entityId: savedRisk.riskScoreId,
+      message: "Score de riesgo KYB calculado correctamente.",
+      metadata: {
+        score: riskResult.score,
+        decision: riskResult.decision,
+        canApprove: riskResult.canApprove,
+        totalFactors: riskResult.riskFactors.length,
+      },
+    });
+
     return res.json({
       ok: true,
       message: "Validación KYB ejecutada",
       data: {
         id: kybCase.id,
-        score: kybCase.score,
-        decision: kybCase.decision,
-        riskFactors: kybCase.riskFactors,
+        score: riskResult.score,
+        decision: riskResult.decision,
+        canApprove: riskResult.canApprove,
+        riskFactors: riskResult.riskFactors,
+        explanation: riskResult.explanation,
       },
     });
   } catch (error) {
