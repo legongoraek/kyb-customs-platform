@@ -88,6 +88,19 @@ export function CaseDetailPage() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      draft: "Borrador",
+      needs_update: "Requiere actualización",
+      review_required: "Requiere revisión",
+      high_risk: "Alto riesgo",
+      approved: "Aprobado",
+      rejected: "Rechazado",
+    };
+
+    return labels[status] || status;
+  };
+
   if (loading) {
     return <div className="text-slate-500">Cargando expediente...</div>;
   }
@@ -122,7 +135,7 @@ export function CaseDetailPage() {
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <InfoCard label="Estado" value={kybCase.status} />
+          <InfoCard label="Estado" value={getStatusLabel(kybCase.status)} />
           <InfoCard
             label="Representante"
             value={kybCase.client.legalRepresentativeName}
