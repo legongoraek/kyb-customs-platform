@@ -6,6 +6,7 @@ const mapKybCaseRow = (row: any): KybCase => ({
   status: row.status,
   decision: row.decision,
   score: row.score,
+  canApprove: Boolean(row.can_approve),
   client: {
     rfc: row.rfc,
     legalName: row.legal_name,
@@ -74,9 +75,18 @@ export const kybRepository = {
   async findAllCases() {
     const result = await pool.query(
       `
-      select *
-      from kyb_cases
-      order by created_at desc
+      select
+        kc.*,
+        coalesce(latest_score.can_approve, false) as can_approve
+      from kyb_cases kc
+      left join lateral (
+        select rs.can_approve
+        from risk_scores rs
+        where rs.case_id = kc.id
+        order by rs.created_at desc
+        limit 1
+      ) latest_score on true
+      order by kc.created_at desc
       `
     );
 
@@ -86,9 +96,18 @@ export const kybRepository = {
   async findCaseById(id: string) {
     const caseResult = await pool.query(
       `
-      select *
-      from kyb_cases
-      where id = $1
+      select
+        kc.*,
+        coalesce(latest_score.can_approve, false) as can_approve
+      from kyb_cases kc
+      left join lateral (
+        select rs.can_approve
+        from risk_scores rs
+        where rs.case_id = kc.id
+        order by rs.created_at desc
+        limit 1
+      ) latest_score on true
+      where kc.id = $1
       `,
       [id]
     );

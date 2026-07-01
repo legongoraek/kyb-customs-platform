@@ -60,6 +60,7 @@ export type KybCase = {
   status: KybStatus;
   decision: KybDecision;
   score: number;
+  canApprove: boolean;
   client: {
     rfc: string;
     legalName: string;

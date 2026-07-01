@@ -30,6 +30,8 @@ export function DashboardPage() {
       review: cases.filter((item) => item.decision === "review_required")
         .length,
       highRisk: cases.filter((item) => item.decision === "high_risk").length,
+      canApprove: cases.filter((item) => item.canApprove).length,
+      blocked: cases.filter((item) => !item.canApprove).length,
     };
   }, [cases]);
 
@@ -54,11 +56,13 @@ export function DashboardPage() {
         </Link>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Total" value={stats.total} />
         <StatCard label="Safe" value={stats.safe} />
         <StatCard label="Review required" value={stats.review} />
         <StatCard label="High risk" value={stats.highRisk} />
+        <StatCard label="Can approve" value={stats.canApprove} />
+        <StatCard label="Blocked" value={stats.blocked} />
       </section>
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">

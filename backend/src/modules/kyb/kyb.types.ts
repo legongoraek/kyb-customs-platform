@@ -53,12 +53,14 @@ export type KybCase = {
   status: KybCaseStatus;
   decision: KybDecision | null;
   score: number;
+  canApprove: boolean;
   client: KybClient;
   documents: KybDocument[];
   satListChecks: SatListCheck[];
   riskFactors: RiskFactor[];
   createdAt: string;
   updatedAt: string;
+
 };
 
 export type SatListCheck = {

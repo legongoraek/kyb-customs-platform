@@ -9,6 +9,7 @@ import {
 import { kybApi, type AddDocumentMetadataPayload } from "../api/kybApi";
 import { DocumentMetadataForm } from "../components/DocumentMetadataForm";
 import { RiskBadge } from "../components/RiskBadge";
+import { ApprovalBadge } from "../components/ApprovalBadge";
 import { RiskFactorsList } from "../components/RiskFactorsList";
 import type { KybCase, RiskResult } from "../types/kyb";
 import { formatDate, formatDateTime } from "../utils/format";
@@ -101,6 +102,15 @@ export function CaseDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <RiskBadge decision={riskResult?.decision || kybCase.decision} />
+            <ApprovalBadge
+              canApprove={
+                riskResult
+                  ? riskResult.canApprove
+                  : kybCase.decision
+                    ? kybCase.decision === "safe"
+                    : null
+              }
+            />
             <h1 className="mt-4 text-3xl font-black text-slate-900">
               {kybCase.client.legalName}
             </h1>
@@ -152,7 +162,7 @@ export function CaseDetailPage() {
             onClick={handleApprove}
             disabled={
               actionLoading !== null ||
-              (riskResult?.decision || kybCase.decision) !== "safe"
+              !(riskResult?.canApprove ?? kybCase.canApprove)
             }
             className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 disabled:bg-slate-300"
           >
@@ -161,7 +171,7 @@ export function CaseDetailPage() {
           </button>
         </div>
 
-        {(riskResult?.explanation || activeRiskFactors.length > 0) && (
+        {(riskResult?.explanation || activeRiskFactors?.length > 0) && (
           <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex gap-3">
               <AlertTriangle className="mt-1 text-amber-600" size={20} />
