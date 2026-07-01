@@ -14,7 +14,7 @@ export function Layout() {
               <p className="text-sm font-black uppercase tracking-wide text-slate-900">
                 KYB Customs
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="hidden text-xs text-slate-500 sm:block">
                 Risk scoring para comercio exterior
               </p>
             </div>
