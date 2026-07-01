@@ -10,6 +10,7 @@ const allowedOrigins = [
   env.frontendUrl,
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://kyb-customs-platform.vercel.app",
 ].filter(Boolean);
 
 app.use(
