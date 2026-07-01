@@ -34,9 +34,6 @@ export function RiskFactorsList({ factors }: Props) {
           <h2 className="text-xl font-black text-slate-900">
             Factores de riesgo
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Explicación auditable de los puntos asignados.
-          </p>
         </div>
 
         <span className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">
@@ -44,7 +41,7 @@ export function RiskFactorsList({ factors }: Props) {
         </span>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[400px] overflow-y-auto">
         {factors.map((factor, index) => (
           <div
             key={`${factor.code}-${index}`}

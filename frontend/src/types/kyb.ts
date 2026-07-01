@@ -60,6 +60,7 @@ export type KybCase = {
   status: KybStatus;
   decision: KybDecision;
   score: number;
+  clientReportedChanges: boolean;
   canApprove: boolean;
   client: {
     rfc: string;
@@ -81,6 +82,7 @@ export type RiskResult = {
   score: number;
   decision: Exclude<KybDecision, null>;
   canApprove: boolean;
+  needsUpdate: boolean;
   riskFactors: RiskFactor[];
   explanation: string;
 };

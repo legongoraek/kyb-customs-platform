@@ -53,6 +53,7 @@ const getDecision = (score: number, hasCriticalRisk: boolean): KybDecision => {
 export const calculateKybRisk = (kybCase: KybCase) => {
   const riskFactors: RiskFactor[] = [];
   let hasCriticalRisk = false;
+  let needsUpdate = false;
 
   const documents = kybCase.documents || [];
 
@@ -94,6 +95,7 @@ export const calculateKybRisk = (kybCase: KybCase) => {
       );
 
     if (isExpired) {
+      needsUpdate = true;
       riskFactors.push(
         createRiskFactor({
           code: "EXPIRED_DOCUMENT",
@@ -130,6 +132,7 @@ export const calculateKybRisk = (kybCase: KybCase) => {
       })
     );
   } else if (!isCurrentMonth(csfDocument.issueDate)) {
+    needsUpdate = true;
     riskFactors.push(
       createRiskFactor({
         code: "CSF_NOT_CURRENT_MONTH",
@@ -306,97 +309,119 @@ export const calculateKybRisk = (kybCase: KybCase) => {
     const satChecks = kybCase.satListChecks || [];
 
     if (satChecks.length === 0) {
-    riskFactors.push(
+      riskFactors.push(
         createRiskFactor({
-        code: "SAT_LIST_CHECK_PENDING",
-        label: "Revisión SAT pendiente",
-        description:
-            "Todavía no se ha ejecutado la revisión contra listas fiscales públicas del SAT.",
-        points: RISK_RULES.FISCAL_LIST_REVIEW_OLDER_THAN_3_MONTHS,
-        severity: "medium",
-        evidence: {
-            source: "SAT",
-            status: "pending",
-        },
+          code: "SAT_LIST_CHECK_PENDING",
+          label: "Revisión SAT pendiente",
+          description:
+              "Todavía no se ha ejecutado la revisión contra listas fiscales públicas del SAT.",
+          points: RISK_RULES.FISCAL_LIST_REVIEW_OLDER_THAN_3_MONTHS,
+          severity: "medium",
+          evidence: {
+              source: "SAT",
+              status: "pending",
+          },
         })
-    );
+      );
     } else {
-    const latestCheckDate = satChecks
-        .map((check) => new Date(check.checkedAt).getTime())
-        .sort((a, b) => b - a)[0];
+      const latestCheckDate = satChecks
+          .map((check) => new Date(check.checkedAt).getTime())
+          .sort((a, b) => b - a)[0];
 
-    const threeMonthsInMs = 1000 * 60 * 60 * 24 * 90;
-    const isOlderThanThreeMonths = Date.now() - latestCheckDate > threeMonthsInMs;
+      const threeMonthsInMs = 1000 * 60 * 60 * 24 * 90;
+      const isOlderThanThreeMonths = Date.now() - latestCheckDate > threeMonthsInMs;
 
-    if (isOlderThanThreeMonths) {
+      if (isOlderThanThreeMonths) {
+        needsUpdate = true;
         riskFactors.push(
-        createRiskFactor({
-            code: "SAT_LIST_CHECK_OLDER_THAN_3_MONTHS",
-            label: "Revisión SAT vencida",
-            description:
-            "La revisión de listas fiscales SAT tiene más de 3 meses.",
-            points: RISK_RULES.FISCAL_LIST_REVIEW_OLDER_THAN_3_MONTHS,
-            severity: "medium",
-            evidence: {
-            latestCheckDate: new Date(latestCheckDate).toISOString(),
-            },
-        })
+          createRiskFactor({
+              code: "SAT_LIST_CHECK_OLDER_THAN_3_MONTHS",
+              label: "Revisión SAT vencida",
+              description:
+              "La revisión de listas fiscales SAT tiene más de 3 meses.",
+              points: RISK_RULES.FISCAL_LIST_REVIEW_OLDER_THAN_3_MONTHS,
+              severity: "medium",
+              evidence: {
+              latestCheckDate: new Date(latestCheckDate).toISOString(),
+              },
+          })
         );
-    }
+      }
 
-    const satMatches = satChecks.filter((check) => check.result === "match");
+      const satMatches = satChecks.filter((check) => check.result === "match");
 
-    for (const check of satMatches) {
+      for (const check of satMatches) {
         const rawMatch = check.rawMatch || {};
         const source = String(rawMatch.source || check.source);
         const listType = String(rawMatch.listType || "");
 
         const isCritical =
-        (source === "SAT_ART_69B" && listType === "definitivos") ||
-        source === "SAT_ART_69B_BIS";
+          (source === "SAT_ART_69B" && listType === "definitivos") ||
+          source === "SAT_ART_69B_BIS";
 
         if (isCritical) {
-        hasCriticalRisk = true;
+          hasCriticalRisk = true;
 
-        riskFactors.push(
+          riskFactors.push(
             createRiskFactor({
-            code: "SAT_CRITICAL_MATCH",
-            label: "Coincidencia crítica en listas SAT",
-            description: `El RFC aparece en una lista fiscal crítica del SAT: ${source} / ${listType}.`,
-            points: RISK_RULES.SAT_LIST_MATCH_CRITICAL,
-            severity: "critical",
-            evidence: {
+              code: "SAT_CRITICAL_MATCH",
+              label: "Coincidencia crítica en listas SAT",
+              description: `El RFC aparece en una lista fiscal crítica del SAT: ${source} / ${listType}.`,
+              points: RISK_RULES.SAT_LIST_MATCH_CRITICAL,
+              severity: "critical",
+              evidence: {
                 checkId: check.id,
                 source,
                 listType,
                 referenceUrl: check.referenceUrl,
                 rawMatch,
-            },
-            })
-        );
+              },
+            }),
+          );
         } else {
-        riskFactors.push(
+          riskFactors.push(
             createRiskFactor({
-            code: "SAT_REVIEW_MATCH",
-            label: "Coincidencia en listas SAT",
-            description: `El RFC aparece en una lista fiscal del SAT que requiere revisión: ${source} / ${listType}.`,
-            points: RISK_RULES.SAT_LIST_MATCH_REVIEW,
-            severity: "high",
-            evidence: {
+              code: "SAT_REVIEW_MATCH",
+              label: "Coincidencia en listas SAT",
+              description: `El RFC aparece en una lista fiscal del SAT que requiere revisión: ${source} / ${listType}.`,
+              points: RISK_RULES.SAT_LIST_MATCH_REVIEW,
+              severity: "high",
+              evidence: {
                 checkId: check.id,
                 source,
                 listType,
                 referenceUrl: check.referenceUrl,
                 rawMatch,
-            },
-            })
-        );
+              },
+            }),
+          );
         }
+      }
     }
+
+    /**
+     * 9. Cambios reportados por el cliente
+     */
+    if (kybCase.clientReportedChanges) {
+      needsUpdate = true;
+
+      riskFactors.push(
+        createRiskFactor({
+          code: "CLIENT_REPORTED_CHANGES",
+          label: "Cambios reportados por el cliente",
+          description:
+            "El cliente reportó cambios y el expediente requiere actualización.",
+          points: 20,
+          severity: "medium",
+          evidence: {
+            clientReportedChanges: true,
+          },
+        })
+      );
     }
 
   /**
-   * 9. Riesgo crítico.
+   * 10. Riesgo crítico.
    * En Paso 4, coincidencias críticas del SAT marcarán hasCriticalRisk = true.
    */
   const score = riskFactors.reduce((total, factor) => total + factor.points, 0);
@@ -415,6 +440,7 @@ export const calculateKybRisk = (kybCase: KybCase) => {
     score: cappedScore,
     decision,
     canApprove,
+    needsUpdate,
     riskFactors,
     explanation,
   };

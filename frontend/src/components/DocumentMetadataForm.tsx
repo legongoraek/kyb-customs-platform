@@ -93,9 +93,6 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
       <h3 className="text-lg font-black text-slate-900">
         Registrar metadata auditable
       </h3>
-      {/* <p className="mt-1 text-sm text-slate-500">
-        Para el MVP puedes registrar metadata auditable sin procesar OCR.
-      </p> */}
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-1">

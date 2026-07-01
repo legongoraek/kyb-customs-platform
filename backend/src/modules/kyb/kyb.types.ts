@@ -53,6 +53,7 @@ export type KybCase = {
   status: KybCaseStatus;
   decision: KybDecision | null;
   score: number;
+  clientReportedChanges: boolean;
   canApprove: boolean;
   client: KybClient;
   documents: KybDocument[];
@@ -60,7 +61,6 @@ export type KybCase = {
   riskFactors: RiskFactor[];
   createdAt: string;
   updatedAt: string;
-
 };
 
 export type SatListCheck = {

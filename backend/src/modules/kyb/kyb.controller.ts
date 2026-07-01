@@ -183,6 +183,7 @@ export const runKybCheck = async (req: Request, res: Response) => {
       score: riskResult.score,
       decision: riskResult.decision,
       canApprove: riskResult.canApprove,
+      needsUpdate: riskResult.needsUpdate,
       explanation: riskResult.explanation,
       riskFactors: riskResult.riskFactors,
     });
@@ -197,6 +198,7 @@ export const runKybCheck = async (req: Request, res: Response) => {
         score: riskResult.score,
         decision: riskResult.decision,
         canApprove: riskResult.canApprove,
+        needsUpdate: riskResult.needsUpdate,
         totalFactors: riskResult.riskFactors.length,
       },
     });
@@ -209,6 +211,7 @@ export const runKybCheck = async (req: Request, res: Response) => {
         score: riskResult.score,
         decision: riskResult.decision,
         canApprove: riskResult.canApprove,
+        needsUpdate: riskResult.needsUpdate,
         riskFactors: riskResult.riskFactors,
         explanation: riskResult.explanation,
       },

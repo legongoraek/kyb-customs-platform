@@ -14,6 +14,7 @@ import { RiskFactorsList } from "../components/RiskFactorsList";
 import type { KybCase, RiskResult } from "../types/kyb";
 import { formatDate, formatDateTime } from "../utils/format";
 import { ScoreCard } from "../components/ScoreCard";
+import { InfoCard } from "../components/InfoCard";
 
 export function CaseDetailPage() {
   const { id } = useParams();
@@ -190,7 +191,7 @@ export function CaseDetailPage() {
         decision={riskResult?.decision || kybCase.decision}
       />
 
-      <section className="grid gap-6 lg:grid-cols-[1fr_420px]">
+      <section className="grid items-start gap-6 lg:grid-cols-[1fr_420px]">
         <div className="space-y-6">
           <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black text-slate-900">Documentos</h2>
@@ -201,7 +202,7 @@ export function CaseDetailPage() {
                   No hay documentos registrados.
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
                   {kybCase.documents.map((document) => (
                     <div
                       key={document.id}
@@ -248,7 +249,7 @@ export function CaseDetailPage() {
                   Todavía no se ha consultado SAT.
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
                   {kybCase.satListChecks.map((check) => (
                     <div key={check.id} className="p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -284,17 +285,6 @@ export function CaseDetailPage() {
 
         <DocumentMetadataForm onSubmit={handleAddDocument} />
       </section>
-    </div>
-  );
-}
-
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-        {label}
-      </p>
-      <p className="mt-1 font-bold text-slate-900">{value}</p>
     </div>
   );
 }

@@ -6,6 +6,7 @@ const mapKybCaseRow = (row: any): KybCase => ({
   status: row.status,
   decision: row.decision,
   score: row.score,
+  clientReportedChanges: row.client_reported_changes || false,
   canApprove: Boolean(row.can_approve),
   client: {
     rfc: row.rfc,
@@ -264,6 +265,7 @@ export const kybRepository = {
     score: number;
     decision: string;
     canApprove: boolean;
+    needsUpdate: boolean;
     explanation: string;
     riskFactors: {
       code: string;
@@ -338,6 +340,12 @@ export const kybRepository = {
         );
       }
 
+      const nextStatus = input.needsUpdate
+        ? "needs_update"
+        : input.decision === "safe"
+          ? "draft"
+          : input.decision;
+
       await client.query(
         `
         update kyb_cases
@@ -351,7 +359,7 @@ export const kybRepository = {
         [
           input.score,
           input.decision,
-          input.decision === "safe" ? "draft" : input.decision,
+          nextStatus,
           input.caseId,
         ]
       );
