@@ -7,6 +7,7 @@ import { kybRepository } from "./kyb.repository";
 import { calculateKybRisk } from "./risk/riskEngine";
 import { satService } from "./sat/sat.service";
 import { satImportService } from "./sat/sat.import.service";
+import { kybReportService } from "./report/kybReport.service";
 
 const getParamId = (req: Request) => {
   const { id } = req.params;
@@ -420,6 +421,113 @@ export const getSatImportLogs = async (_req: Request, res: Response) => {
     return res.status(500).json({
       ok: false,
       message: "Error al obtener logs de importación SAT",
+    });
+  }
+};
+
+export const getKybCaseAuditLogs = async (req: Request, res: Response) => {
+  try {
+    const caseId = getParamId(req);
+
+    const kybCase = await kybRepository.findCaseById(caseId);
+
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
+
+    const auditLogs = await kybRepository.findAuditLogsByCaseId(caseId);
+
+    return res.json({
+      ok: true,
+      data: auditLogs,
+    });
+  } catch (error) {
+    console.error("getKybCaseAuditLogs error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al obtener audit logs",
+    });
+  }
+};
+
+export const getKybCaseReportJson = async (req: Request, res: Response) => {
+  try {
+    const caseId = getParamId(req);
+
+    const kybCase = await kybRepository.findCaseById(caseId);
+
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
+
+    const auditLogs = await kybRepository.findAuditLogsByCaseId(caseId);
+    const latestRiskScore = await kybRepository.findLatestRiskScoreByCaseId(caseId);
+
+    const report = kybReportService.buildJsonReport({
+      generatedAt: new Date().toISOString(),
+      kybCase,
+      auditLogs,
+      latestRiskScore,
+    });
+
+    return res.json({
+      ok: true,
+      data: report,
+    });
+  } catch (error) {
+    console.error("getKybCaseReportJson error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al generar reporte JSON",
+    });
+  }
+};
+
+export const getKybCaseReportPdf = async (req: Request, res: Response) => {
+  try {
+    const caseId = getParamId(req);
+
+    const kybCase = await kybRepository.findCaseById(caseId);
+
+    if (!kybCase) {
+      return res.status(404).json({
+        ok: false,
+        message: "Expediente KYB no encontrado",
+      });
+    }
+
+    const auditLogs = await kybRepository.findAuditLogsByCaseId(caseId);
+    const latestRiskScore = await kybRepository.findLatestRiskScoreByCaseId(caseId);
+
+    const reportData = {
+      generatedAt: new Date().toISOString(),
+      kybCase,
+      auditLogs,
+      latestRiskScore,
+    };
+
+    const pdf = kybReportService.buildPdfReport(reportData);
+
+    const filename = `kyb-report-${kybCase.client.rfc}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    pdf.pipe(res);
+  } catch (error) {
+    console.error("getKybCaseReportPdf error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al generar reporte PDF",
     });
   }
 };

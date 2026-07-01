@@ -86,3 +86,27 @@ export type RiskResult = {
   riskFactors: RiskFactor[];
   explanation: string;
 };
+
+export type AuditLog = {
+  id: string;
+  caseId: string;
+  action: string;
+  entityType: string;
+  entityId?: string;
+  message: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type SatImportLog = {
+  id: string;
+  source: string;
+  source_name: string;
+  source_url: string;
+  status: "running" | "success" | "failed";
+  imported_count: number;
+  error_message?: string;
+  started_at: string;
+  finished_at?: string;
+  metadata: Record<string, unknown>;
+};

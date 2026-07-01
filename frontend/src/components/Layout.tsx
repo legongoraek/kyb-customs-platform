@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, FilePlus2 } from "lucide-react";
 
 export function Layout() {
   return (
@@ -35,7 +35,7 @@ export function Layout() {
             </NavLink>
 
             <NavLink
-              to="/cases/new"
+              to="/sat/imports"
               className={({ isActive }) =>
                 `rounded-xl px-4 py-2 text-sm font-semibold ${
                   isActive
@@ -44,7 +44,21 @@ export function Layout() {
                 }`
               }
             >
-              Nuevo expediente
+              SAT
+            </NavLink>
+
+            <NavLink
+              to="/cases/new"
+              className={({ isActive }) =>
+                `inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold ${
+                  isActive
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:bg-slate-100"
+                }`
+              }
+            >
+              <FilePlus2 size={18} />
+              <span className="hidden sm:inline">Nuevo expediente</span>
             </NavLink>
           </nav>
         </div>

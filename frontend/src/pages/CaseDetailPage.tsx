@@ -5,6 +5,8 @@ import {
   CheckCircle2,
   FileSearch,
   ShieldAlert,
+  Download,
+  Info,
 } from "lucide-react";
 import { kybApi, type AddDocumentMetadataPayload } from "../api/kybApi";
 import { DocumentMetadataForm } from "../components/DocumentMetadataForm";
@@ -15,6 +17,9 @@ import type { KybCase, RiskResult } from "../types/kyb";
 import { formatDate, formatDateTime } from "../utils/format";
 import { ScoreCard } from "../components/ScoreCard";
 import { InfoCard } from "../components/InfoCard";
+import { AuditLogList } from "../components/AuditLogList";
+import { SatEvidenceList } from "../components/SatEvidenceList";
+import type { AuditLog } from "../types/kyb";
 
 export function CaseDetailPage() {
   const { id } = useParams();
@@ -23,6 +28,7 @@ export function CaseDetailPage() {
   const [riskResult, setRiskResult] = useState<RiskResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
   const loadCase = async () => {
     if (!id) return;
@@ -30,6 +36,9 @@ export function CaseDetailPage() {
     try {
       const data = await kybApi.getCaseById(id);
       setKybCase(data);
+
+      const logs = await kybApi.getAuditLogs(id);
+      setAuditLogs(logs);
     } finally {
       setLoading(false);
     }
@@ -110,6 +119,8 @@ export function CaseDetailPage() {
   }
 
   const activeRiskFactors = riskResult?.riskFactors || kybCase.riskFactors;
+  const currentDecision = riskResult?.decision || kybCase.decision;
+  const canApproveNow = currentDecision === "safe";
 
   return (
     <div className="space-y-7">
@@ -146,43 +157,83 @@ export function CaseDetailPage() {
           />
         </div>
 
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-          <p className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
             Acciones del expediente
           </p>
+        
+          <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-start">
+            {/* Grupo 1: verificación y aprobación */}
+            <div className="flex-1">
+              <p className="mb-2 text-xs font-semibold text-slate-400">
+                Verificación
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <button
+                  onClick={handleSatCheck}
+                  disabled={actionLoading !== null}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                >
+                  <FileSearch size={18} />
+                  {actionLoading === "sat" ? "Consultando SAT..." : "Consultar SAT"}
+                </button>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={handleSatCheck}
-              disabled={actionLoading !== null}
-              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500"
-            >
-              <FileSearch size={18} />
-              {actionLoading === "sat" ? "Consultando SAT..." : "Consultar SAT"}
-            </button>
+                <button
+                  onClick={handleRiskCheck}
+                  disabled={actionLoading !== null}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                >
+                  <ShieldAlert size={18} />
+                  {actionLoading === "risk" ? "Calculando score..." : "Ejecutar score KYB"}
+                </button>
 
-            <button
-              onClick={handleRiskCheck}
-              disabled={actionLoading !== null}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
-            >
-              <ShieldAlert size={18} />
-              {actionLoading === "risk"
-                ? "Calculando score..."
-                : "Ejecutar score KYB"}
-            </button>
+                <button
+                  onClick={handleApprove}
+                  disabled={actionLoading !== null || !canApproveNow}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
+                >
+                  <CheckCircle2 size={18} />
+                  Aprobar expediente
+                </button>
+              </div>
+        
+              {!canApproveNow && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+                  <Info size={14} className="shrink-0" />
+                  Ejecuta el score KYB con resultado <span className="font-semibold">safe</span> para poder aprobar este expediente.
+                </p>
+              )}
+            </div>
+        
+            {/* Divisor */}
+            <div className="hidden w-px self-stretch bg-slate-200 lg:block" />
+            <div className="h-px w-full bg-slate-200 lg:hidden" />
+        
+            {/* Grupo 2: exportación */}
+            <div className="lg:w-56">
+              <p className="mb-2 text-xs font-semibold text-slate-400">Reportes</p>
+              <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-wrap">
+                <a
+                  href={kybApi.getReportJsonUrl(kybCase.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-700 ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
+                >
+                  <Download size={16} />
+                  JSON
+                </a>
 
-            <button
-              onClick={handleApprove}
-              disabled={
-                actionLoading !== null ||
-                (riskResult?.decision || kybCase.decision) !== "safe"
-              }
-              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 disabled:bg-slate-300"
-            >
-              <CheckCircle2 size={18} />
-              Aprobar expediente
-            </button>
+                <a
+                  href={kybApi.getReportPdfUrl(kybCase.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-700 ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
+                >
+                  <Download size={16} />
+                  PDF
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -251,49 +302,11 @@ export function CaseDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-xl font-black text-slate-900">
-              Revisión SAT
-            </h2>
-
-            <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
-              {kybCase.satListChecks.length === 0 ? (
-                <div className="p-5 text-sm text-slate-500">
-                  Todavía no se ha consultado SAT.
-                </div>
-              ) : (
-                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
-                  {kybCase.satListChecks.map((check) => (
-                    <div key={check.id} className="p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="font-bold text-slate-900">
-                          {check.source}
-                        </p>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-bold ${
-                            check.result === "match"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-emerald-100 text-emerald-700"
-                          }`}
-                        >
-                          {check.result}
-                        </span>
-                      </div>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        RFC buscado: {check.rfcSearched}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Fecha: {formatDateTime(check.checkedAt)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
+          <SatEvidenceList checks={kybCase.satListChecks} />
 
           <RiskFactorsList factors={activeRiskFactors} />
+
+          <AuditLogList logs={auditLogs} />
         </div>
 
         <DocumentMetadataForm onSubmit={handleAddDocument} />

@@ -2,7 +2,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
+  Rectangle,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -99,18 +99,18 @@ export function RiskDistributionChart({
               radius={[10, 10, 0, 0]}
               onClick={isInteractive ? handleBarClick : undefined}
               cursor={isInteractive ? "pointer" : "default"}
-            >
-              {data.map((entry) => (
-                <Cell
-                  key={entry.filter}
-                  fill={
-                    activeFilter === "all" || activeFilter === entry.filter
-                      ? ACTIVE_COLOR
-                      : INACTIVE_COLOR
-                  }
-                />
-              ))}
-            </Bar>
+              shape={(props: React.ComponentProps<typeof Rectangle> & { payload?: { filter?: RiskDistributionFilter } }) => {
+                const entryFilter = props.payload?.filter as
+                  | RiskDistributionFilter
+                  | undefined;
+                const fill =
+                  activeFilter === "all" || activeFilter === entryFilter
+                    ? ACTIVE_COLOR
+                    : INACTIVE_COLOR;
+ 
+                return <Rectangle {...props} fill={fill} />;
+              }}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

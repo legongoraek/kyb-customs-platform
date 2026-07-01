@@ -377,4 +377,42 @@ export const kybRepository = {
     }
   },
 
+  async findAuditLogsByCaseId(caseId: string) {
+    const result = await pool.query(
+      `
+      select *
+      from audit_logs
+      where case_id = $1
+      order by created_at desc
+      `,
+      [caseId]
+    );
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      caseId: row.case_id,
+      action: row.action,
+      entityType: row.entity_type,
+      entityId: row.entity_id,
+      message: row.message,
+      metadata: row.metadata || {},
+      createdAt: row.created_at,
+    }));
+  },
+
+  async findLatestRiskScoreByCaseId(caseId: string) {
+    const result = await pool.query(
+      `
+      select *
+      from risk_scores
+      where case_id = $1
+      order by created_at desc
+      limit 1
+      `,
+      [caseId]
+    );
+
+    return result.rows[0] || null;
+  },
 };
+

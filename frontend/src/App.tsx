@@ -20,6 +20,12 @@ const CaseDetailPage = lazy(() =>
   }))
 );
 
+const SatImportLogsPage = lazy(() =>
+  import("./pages/SatImportLogsPage").then((module) => ({
+    default: module.SatImportLogsPage,
+  }))
+);
+
 function PageLoader() {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
@@ -48,6 +54,10 @@ const router = createBrowserRouter([
       {
         path: "cases/:id",
         element: withSuspense(<CaseDetailPage />),
+      },
+      {
+        path: "sat/imports",
+        element: withSuspense(<SatImportLogsPage />),
       },
     ],
   },

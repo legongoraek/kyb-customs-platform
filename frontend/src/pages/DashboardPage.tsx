@@ -91,7 +91,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-7">
-      <section className="flex flex-wrap items-center justify-between gap-4">
+      <section className="flex flex-wrap items-center gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-900">
             Expedientes KYB
@@ -103,7 +103,7 @@ export function DashboardPage() {
 
         <Link
           to="/cases/new"
-          className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
+          className="ml-auto inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
         >
           <FilePlus2 size={18} />
           Nuevo expediente
