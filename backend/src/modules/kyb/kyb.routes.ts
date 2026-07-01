@@ -18,7 +18,7 @@ kybRoutes.get("/", getKybCases);
 kybRoutes.post("/", createKybCase);
 
 kybRoutes.get("/sat/sources", getSatSources);
-kybRoutes.post("/sat/sources/import", importSatSources);
+kybRoutes.post("/sat/import", importSatSources);
 kybRoutes.get("/sat/import-logs", getSatImportLogs);
 
 kybRoutes.get("/:id", getKybCaseById);
