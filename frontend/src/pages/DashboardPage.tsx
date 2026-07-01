@@ -5,6 +5,7 @@ import { kybApi } from "../api/kybApi";
 import type { KybCase } from "../types/kyb";
 import { RiskBadge } from "../components/RiskBadge";
 import { formatDateTime } from "../utils/format";
+import { RiskDistributionChart } from "../components/RiskDistributionChart";
 
 export function DashboardPage() {
   const [cases, setCases] = useState<KybCase[]>([]);
@@ -64,6 +65,8 @@ export function DashboardPage() {
         <StatCard label="Can approve" value={stats.canApprove} />
         <StatCard label="Blocked" value={stats.blocked} />
       </section>
+      
+      <RiskDistributionChart cases={cases} />
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-5 py-4">
@@ -82,7 +85,7 @@ export function DashboardPage() {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
             {cases.map((item) => (
               <Link
                 key={item.id}

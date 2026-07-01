@@ -13,6 +13,7 @@ import { ApprovalBadge } from "../components/ApprovalBadge";
 import { RiskFactorsList } from "../components/RiskFactorsList";
 import type { KybCase, RiskResult } from "../types/kyb";
 import { formatDate, formatDateTime } from "../utils/format";
+import { ScoreCard } from "../components/ScoreCard";
 
 export function CaseDetailPage() {
   const { id } = useParams();
@@ -117,12 +118,6 @@ export function CaseDetailPage() {
             <p className="mt-1 text-slate-500">RFC: {kybCase.client.rfc}</p>
           </div>
 
-          <div className="text-right">
-            <p className="text-sm font-semibold text-slate-500">Score</p>
-            <p className="text-5xl font-black text-slate-900">
-              {riskResult?.score ?? kybCase.score}
-            </p>
-          </div>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -137,38 +132,44 @@ export function CaseDetailPage() {
           />
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            onClick={handleSatCheck}
-            disabled={actionLoading !== null}
-            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500"
-          >
-            <FileSearch size={18} />
-            {actionLoading === "sat" ? "Consultando SAT..." : "Consultar SAT"}
-          </button>
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+          <p className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
+            Acciones del expediente
+          </p>
 
-          <button
-            onClick={handleRiskCheck}
-            disabled={actionLoading !== null}
-            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
-          >
-            <ShieldAlert size={18} />
-            {actionLoading === "risk"
-              ? "Calculando score..."
-              : "Ejecutar score KYB"}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={handleSatCheck}
+              disabled={actionLoading !== null}
+              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500"
+            >
+              <FileSearch size={18} />
+              {actionLoading === "sat" ? "Consultando SAT..." : "Consultar SAT"}
+            </button>
 
-          <button
-            onClick={handleApprove}
-            disabled={
-              actionLoading !== null ||
-              !(riskResult?.canApprove ?? kybCase.canApprove)
-            }
-            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 disabled:bg-slate-300"
-          >
-            <CheckCircle2 size={18} />
-            Aprobar expediente
-          </button>
+            <button
+              onClick={handleRiskCheck}
+              disabled={actionLoading !== null}
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
+            >
+              <ShieldAlert size={18} />
+              {actionLoading === "risk"
+                ? "Calculando score..."
+                : "Ejecutar score KYB"}
+            </button>
+
+            <button
+              onClick={handleApprove}
+              disabled={
+                actionLoading !== null ||
+                (riskResult?.decision || kybCase.decision) !== "safe"
+              }
+              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 disabled:bg-slate-300"
+            >
+              <CheckCircle2 size={18} />
+              Aprobar expediente
+            </button>
+          </div>
         </div>
 
         {(riskResult?.explanation || activeRiskFactors?.length > 0) && (
@@ -183,6 +184,11 @@ export function CaseDetailPage() {
           </div>
         )}
       </section>
+
+      <ScoreCard
+        score={riskResult?.score ?? kybCase.score}
+        decision={riskResult?.decision || kybCase.decision}
+      />
 
       <section className="grid gap-6 lg:grid-cols-[1fr_420px]">
         <div className="space-y-6">
@@ -273,12 +279,7 @@ export function CaseDetailPage() {
             </div>
           </section>
 
-          <section>
-            <h2 className="mb-4 text-xl font-black text-slate-900">
-              Factores de riesgo
-            </h2>
-            <RiskFactorsList factors={activeRiskFactors} />
-          </section>
+          <RiskFactorsList factors={activeRiskFactors} />
         </div>
 
         <DocumentMetadataForm onSubmit={handleAddDocument} />
