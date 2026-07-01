@@ -8,6 +8,8 @@ import {
   runKybCheck,
   runSatListCheck,
   getSatSources,
+  importSatSources,
+  getSatImportLogs,
 } from "./kyb.controller";
 
 export const kybRoutes = Router();
@@ -16,6 +18,8 @@ kybRoutes.get("/", getKybCases);
 kybRoutes.post("/", createKybCase);
 
 kybRoutes.get("/sat/sources", getSatSources);
+kybRoutes.post("/sat/sources/import", importSatSources);
+kybRoutes.get("/sat/import-logs", getSatImportLogs);
 
 kybRoutes.get("/:id", getKybCaseById);
 kybRoutes.post("/:id/documents/metadata", addKybDocumentMetadata);

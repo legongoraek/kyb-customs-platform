@@ -6,6 +6,7 @@ import {
 import { kybRepository } from "./kyb.repository";
 import { calculateKybRisk } from "./risk/riskEngine";
 import { satService } from "./sat/sat.service";
+import { satImportService } from "./sat/sat.import.service";
 
 const getParamId = (req: Request) => {
   const { id } = req.params;
@@ -328,27 +329,97 @@ export const getSatSources = async (_req: Request, res: Response) => {
       {
         source: "SAT_ART_69",
         name: "Artículo 69 CFF / Contribuyentes incumplidos",
+        description:
+          "Consulta pública del SAT para conocer RFC, nombre, denominación o razón social de contribuyentes con adeudos firmes, exigibles, no localizados, cancelados, con sentencia condenatoria por delito fiscal o con créditos fiscales condonados.",
+        riskUse:
+          "Una coincidencia en esta fuente incrementa el riesgo y requiere revisión humana.",
+        kybRiskLevel: "review",
         referenceUrl:
           "https://wwwmat.sat.gob.mx/consultas/11981/consulta-la-relacion-de-contribuyentes-incumplidos",
       },
       {
         source: "SAT_ART_69B",
         name: "Artículo 69-B CFF / Operaciones presuntamente inexistentes",
+        description:
+          "Consulta pública del SAT para conocer si un contribuyente se ubica en la presunción de realizar operaciones inexistentes mediante la emisión de facturas o comprobantes fiscales.",
+        riskUse:
+          "Una coincidencia como presunto requiere revisión humana; una coincidencia como definitivo se considera crítica y bloquea aprobación.",
+        kybRiskLevel: "review_or_critical",
         referenceUrl:
           "https://wwwmat.sat.gob.mx/consultas/76674/consulta-la-relacion-de-contribuyentes-con-operaciones-presuntamente-inexistentes",
       },
       {
         source: "SAT_ART_69B_BIS",
         name: "Artículo 69-B Bis CFF / Datos abiertos SAT",
+        description:
+          "Fuente pública del SAT relacionada con contribuyentes publicados conforme a los artículos 69-B y 69-B Bis del Código Fiscal de la Federación.",
+        riskUse:
+          "Una coincidencia en esta fuente se considera crítica para el flujo KYB y bloquea aprobación.",
+        kybRiskLevel: "critical",
         referenceUrl:
           "https://www.sat.gob.mx/minisitio/DatosAbiertos/contribuyentes_publicados.html",
       },
       {
         source: "SAT_ART_49_BIS",
         name: "Artículo 49 Bis CFF / Fuente pública justificable",
+        description:
+          "Fuente pública considerada para justificar revisión de obligaciones y contexto de riesgo fiscal/preventivo.",
+        riskUse:
+          "Una coincidencia o alerta asociada a esta fuente requiere revisión humana.",
+        kybRiskLevel: "review",
         referenceUrl:
           "https://sppld.sat.gob.mx/pld/interiores/obligaciones.html",
       },
     ],
+    auditModel: {
+      table: "sat_list_checks",
+      fields: [
+        "rfc_searched",
+        "source",
+        "result",
+        "reference_url",
+        "raw_match",
+        "checked_at",
+      ],
+      description:
+        "Cada revisión SAT guarda fuente, fecha/hora, RFC buscado, resultado, referencia utilizada y evidencia cruda.",
+    },
   });
+};
+
+export const importSatSources = async (_req: Request, res: Response) => {
+  try {
+    const results = await satImportService.importAllSources();
+
+    return res.json({
+      ok: true,
+      message: "Importación SAT ejecutada correctamente",
+      data: results,
+    });
+  } catch (error) {
+    console.error("importSatSources error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al ejecutar importación SAT",
+    });
+  }
+};
+
+export const getSatImportLogs = async (_req: Request, res: Response) => {
+  try {
+    const logs = await satImportService.getImportLogs();
+
+    return res.json({
+      ok: true,
+      data: logs,
+    });
+  } catch (error) {
+    console.error("getSatImportLogs error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error al obtener logs de importación SAT",
+    });
+  }
 };

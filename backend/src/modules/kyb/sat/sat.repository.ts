@@ -87,6 +87,9 @@ export const satRepository = {
       [caseId]
     );
 
-    return result.rows;
+    return result.rows.map((row) => ({
+      ...row,
+      rawMatch: row.raw_match ? JSON.parse(row.raw_match) : undefined,
+    }));
   },
 };
