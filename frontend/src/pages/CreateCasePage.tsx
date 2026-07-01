@@ -154,6 +154,14 @@ export function CreateCasePage() {
         >
           {loading ? "Creando..." : "Crear expediente"}
         </button>
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          disabled={loading}
+          className="mt-3 w-full rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-700 hover:bg-slate-100"
+        >
+          Cancelar
+        </button>
       </form>
     </div>
   );
