@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.kybRoutes = void 0;
+const express_1 = require("express");
+const kyb_controller_1 = require("./kyb.controller");
+exports.kybRoutes = (0, express_1.Router)();
+exports.kybRoutes.get("/", kyb_controller_1.getKybCases);
+exports.kybRoutes.post("/", kyb_controller_1.createKybCase);
+exports.kybRoutes.get("/:id", kyb_controller_1.getKybCaseById);
+exports.kybRoutes.post("/:id/documents/metadata", kyb_controller_1.addKybDocumentMetadata);
+exports.kybRoutes.post("/:id/sat-list-check", kyb_controller_1.runSatListCheck);
+exports.kybRoutes.post("/:id/run-check", kyb_controller_1.runKybCheck);
+exports.kybRoutes.post("/:id/approve", kyb_controller_1.approveKybCase);
