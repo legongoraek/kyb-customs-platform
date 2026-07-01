@@ -320,3 +320,35 @@ export const runSatListCheck = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getSatSources = async (_req: Request, res: Response) => {
+  return res.json({
+    ok: true,
+    data: [
+      {
+        source: "SAT_ART_69",
+        name: "Artículo 69 CFF / Contribuyentes incumplidos",
+        referenceUrl:
+          "https://wwwmat.sat.gob.mx/consultas/11981/consulta-la-relacion-de-contribuyentes-incumplidos",
+      },
+      {
+        source: "SAT_ART_69B",
+        name: "Artículo 69-B CFF / Operaciones presuntamente inexistentes",
+        referenceUrl:
+          "https://wwwmat.sat.gob.mx/consultas/76674/consulta-la-relacion-de-contribuyentes-con-operaciones-presuntamente-inexistentes",
+      },
+      {
+        source: "SAT_ART_69B_BIS",
+        name: "Artículo 69-B Bis CFF / Datos abiertos SAT",
+        referenceUrl:
+          "https://www.sat.gob.mx/minisitio/DatosAbiertos/contribuyentes_publicados.html",
+      },
+      {
+        source: "SAT_ART_49_BIS",
+        name: "Artículo 49 Bis CFF / Fuente pública justificable",
+        referenceUrl:
+          "https://sppld.sat.gob.mx/pld/interiores/obligaciones.html",
+      },
+    ],
+  });
+};
