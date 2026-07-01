@@ -7,6 +7,12 @@ import { kybRepository } from "./kyb.repository";
 import { calculateKybRisk } from "./risk/riskEngine";
 import { satService } from "./sat/sat.service";
 
+const getParamId = (req: Request) => {
+  const { id } = req.params;
+
+  return Array.isArray(id) ? id[0] : id;
+};
+
 export const createKybCase = async (req: Request, res: Response) => {
   const validation = createKybCaseSchema.safeParse(req.body);
 
@@ -68,7 +74,7 @@ export const getKybCases = async (_req: Request, res: Response) => {
 
 export const getKybCaseById = async (req: Request, res: Response) => {
   try {
-    const kybCase = await kybRepository.findCaseById(req.params.id);
+    const kybCase = await kybRepository.findCaseById(getParamId(req));
 
     if (!kybCase) {
       return res.status(404).json({
@@ -93,7 +99,7 @@ export const getKybCaseById = async (req: Request, res: Response) => {
 
 export const addKybDocumentMetadata = async (req: Request, res: Response) => {
   try {
-    const kybCase = await kybRepository.findCaseById(req.params.id);
+    const kybCase = await kybRepository.findCaseById(getParamId(req));
 
     if (!kybCase) {
       return res.status(404).json({
@@ -161,7 +167,7 @@ export const addKybDocumentMetadata = async (req: Request, res: Response) => {
 
 export const runKybCheck = async (req: Request, res: Response) => {
   try {
-    const kybCase = await kybRepository.findCaseById(req.params.id);
+    const kybCase = await kybRepository.findCaseById(getParamId(req));
 
     if (!kybCase) {
       return res.status(404).json({
@@ -219,7 +225,7 @@ export const runKybCheck = async (req: Request, res: Response) => {
 
 export const approveKybCase = async (req: Request, res: Response) => {
   try {
-    const kybCase = await kybRepository.findCaseById(req.params.id);
+    const kybCase = await kybRepository.findCaseById(getParamId(req));
 
     if (!kybCase) {
       return res.status(404).json({
@@ -269,7 +275,7 @@ export const approveKybCase = async (req: Request, res: Response) => {
 
 export const runSatListCheck = async (req: Request, res: Response) => {
   try {
-    const kybCase = await kybRepository.findCaseById(req.params.id);
+    const kybCase = await kybRepository.findCaseById(getParamId(req));
 
     if (!kybCase) {
       return res.status(404).json({
