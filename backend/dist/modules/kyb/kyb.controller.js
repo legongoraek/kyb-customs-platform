@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runSatListCheck = exports.approveKybCase = exports.runKybCheck = exports.addKybDocumentMetadata = exports.getKybCaseById = exports.getKybCases = exports.createKybCase = void 0;
+exports.getKybCaseReportPdf = exports.getKybCaseReportJson = exports.getKybCaseAuditLogs = exports.getSatImportLogs = exports.importSatSources = exports.getSatSources = exports.runSatListCheck = exports.approveKybCase = exports.runKybCheck = exports.addKybDocumentMetadata = exports.getKybCaseById = exports.getKybCases = exports.createKybCase = void 0;
 const kyb_schemas_1 = require("./kyb.schemas");
 const kyb_repository_1 = require("./kyb.repository");
 const riskEngine_1 = require("./risk/riskEngine");
 const sat_service_1 = require("./sat/sat.service");
+const sat_import_service_1 = require("./sat/sat.import.service");
+const kybReport_service_1 = require("./report/kybReport.service");
 const getParamId = (req) => {
     const { id } = req.params;
     return Array.isArray(id) ? id[0] : id;
@@ -162,6 +164,7 @@ const runKybCheck = async (req, res) => {
             score: riskResult.score,
             decision: riskResult.decision,
             canApprove: riskResult.canApprove,
+            needsUpdate: riskResult.needsUpdate,
             explanation: riskResult.explanation,
             riskFactors: riskResult.riskFactors,
         });
@@ -175,6 +178,7 @@ const runKybCheck = async (req, res) => {
                 score: riskResult.score,
                 decision: riskResult.decision,
                 canApprove: riskResult.canApprove,
+                needsUpdate: riskResult.needsUpdate,
                 totalFactors: riskResult.riskFactors.length,
             },
         });
@@ -186,6 +190,7 @@ const runKybCheck = async (req, res) => {
                 score: riskResult.score,
                 decision: riskResult.decision,
                 canApprove: riskResult.canApprove,
+                needsUpdate: riskResult.needsUpdate,
                 riskFactors: riskResult.riskFactors,
                 explanation: riskResult.explanation,
             },
@@ -286,3 +291,180 @@ const runSatListCheck = async (req, res) => {
     }
 };
 exports.runSatListCheck = runSatListCheck;
+const getSatSources = async (_req, res) => {
+    return res.json({
+        ok: true,
+        data: [
+            {
+                source: "SAT_ART_69",
+                name: "Artículo 69 CFF / Contribuyentes incumplidos",
+                description: "Consulta pública del SAT para conocer RFC, nombre, denominación o razón social de contribuyentes con adeudos firmes, exigibles, no localizados, cancelados, con sentencia condenatoria por delito fiscal o con créditos fiscales condonados.",
+                riskUse: "Una coincidencia en esta fuente incrementa el riesgo y requiere revisión humana.",
+                kybRiskLevel: "review",
+                referenceUrl: "https://wwwmat.sat.gob.mx/consultas/11981/consulta-la-relacion-de-contribuyentes-incumplidos",
+            },
+            {
+                source: "SAT_ART_69B",
+                name: "Artículo 69-B CFF / Operaciones presuntamente inexistentes",
+                description: "Consulta pública del SAT para conocer si un contribuyente se ubica en la presunción de realizar operaciones inexistentes mediante la emisión de facturas o comprobantes fiscales.",
+                riskUse: "Una coincidencia como presunto requiere revisión humana; una coincidencia como definitivo se considera crítica y bloquea aprobación.",
+                kybRiskLevel: "review_or_critical",
+                referenceUrl: "https://wwwmat.sat.gob.mx/consultas/76674/consulta-la-relacion-de-contribuyentes-con-operaciones-presuntamente-inexistentes",
+            },
+            {
+                source: "SAT_ART_69B_BIS",
+                name: "Artículo 69-B Bis CFF / Datos abiertos SAT",
+                description: "Fuente pública del SAT relacionada con contribuyentes publicados conforme a los artículos 69-B y 69-B Bis del Código Fiscal de la Federación.",
+                riskUse: "Una coincidencia en esta fuente se considera crítica para el flujo KYB y bloquea aprobación.",
+                kybRiskLevel: "critical",
+                referenceUrl: "https://www.sat.gob.mx/minisitio/DatosAbiertos/contribuyentes_publicados.html",
+            },
+            {
+                source: "SAT_ART_49_BIS",
+                name: "Artículo 49 Bis CFF / Fuente pública justificable",
+                description: "Fuente pública considerada para justificar revisión de obligaciones y contexto de riesgo fiscal/preventivo.",
+                riskUse: "Una coincidencia o alerta asociada a esta fuente requiere revisión humana.",
+                kybRiskLevel: "review",
+                referenceUrl: "https://sppld.sat.gob.mx/pld/interiores/obligaciones.html",
+            },
+        ],
+        auditModel: {
+            table: "sat_list_checks",
+            fields: [
+                "rfc_searched",
+                "source",
+                "result",
+                "reference_url",
+                "raw_match",
+                "checked_at",
+            ],
+            description: "Cada revisión SAT guarda fuente, fecha/hora, RFC buscado, resultado, referencia utilizada y evidencia cruda.",
+        },
+    });
+};
+exports.getSatSources = getSatSources;
+const importSatSources = async (_req, res) => {
+    try {
+        const results = await sat_import_service_1.satImportService.importAllSources();
+        return res.json({
+            ok: true,
+            message: "Importación SAT ejecutada correctamente",
+            data: results,
+        });
+    }
+    catch (error) {
+        console.error("importSatSources error:", error);
+        return res.status(500).json({
+            ok: false,
+            message: "Error al ejecutar importación SAT",
+        });
+    }
+};
+exports.importSatSources = importSatSources;
+const getSatImportLogs = async (_req, res) => {
+    try {
+        const logs = await sat_import_service_1.satImportService.getImportLogs();
+        return res.json({
+            ok: true,
+            data: logs,
+        });
+    }
+    catch (error) {
+        console.error("getSatImportLogs error:", error);
+        return res.status(500).json({
+            ok: false,
+            message: "Error al obtener logs de importación SAT",
+        });
+    }
+};
+exports.getSatImportLogs = getSatImportLogs;
+const getKybCaseAuditLogs = async (req, res) => {
+    try {
+        const caseId = getParamId(req);
+        const kybCase = await kyb_repository_1.kybRepository.findCaseById(caseId);
+        if (!kybCase) {
+            return res.status(404).json({
+                ok: false,
+                message: "Expediente KYB no encontrado",
+            });
+        }
+        const auditLogs = await kyb_repository_1.kybRepository.findAuditLogsByCaseId(caseId);
+        return res.json({
+            ok: true,
+            data: auditLogs,
+        });
+    }
+    catch (error) {
+        console.error("getKybCaseAuditLogs error:", error);
+        return res.status(500).json({
+            ok: false,
+            message: "Error al obtener audit logs",
+        });
+    }
+};
+exports.getKybCaseAuditLogs = getKybCaseAuditLogs;
+const getKybCaseReportJson = async (req, res) => {
+    try {
+        const caseId = getParamId(req);
+        const kybCase = await kyb_repository_1.kybRepository.findCaseById(caseId);
+        if (!kybCase) {
+            return res.status(404).json({
+                ok: false,
+                message: "Expediente KYB no encontrado",
+            });
+        }
+        const auditLogs = await kyb_repository_1.kybRepository.findAuditLogsByCaseId(caseId);
+        const latestRiskScore = await kyb_repository_1.kybRepository.findLatestRiskScoreByCaseId(caseId);
+        const report = kybReport_service_1.kybReportService.buildJsonReport({
+            generatedAt: new Date().toISOString(),
+            kybCase,
+            auditLogs,
+            latestRiskScore,
+        });
+        return res.json({
+            ok: true,
+            data: report,
+        });
+    }
+    catch (error) {
+        console.error("getKybCaseReportJson error:", error);
+        return res.status(500).json({
+            ok: false,
+            message: "Error al generar reporte JSON",
+        });
+    }
+};
+exports.getKybCaseReportJson = getKybCaseReportJson;
+const getKybCaseReportPdf = async (req, res) => {
+    try {
+        const caseId = getParamId(req);
+        const kybCase = await kyb_repository_1.kybRepository.findCaseById(caseId);
+        if (!kybCase) {
+            return res.status(404).json({
+                ok: false,
+                message: "Expediente KYB no encontrado",
+            });
+        }
+        const auditLogs = await kyb_repository_1.kybRepository.findAuditLogsByCaseId(caseId);
+        const latestRiskScore = await kyb_repository_1.kybRepository.findLatestRiskScoreByCaseId(caseId);
+        const reportData = {
+            generatedAt: new Date().toISOString(),
+            kybCase,
+            auditLogs,
+            latestRiskScore,
+        };
+        const pdf = kybReport_service_1.kybReportService.buildPdfReport(reportData);
+        const filename = `kyb-report-${kybCase.client.rfc}.pdf`;
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        pdf.pipe(res);
+    }
+    catch (error) {
+        console.error("getKybCaseReportPdf error:", error);
+        return res.status(500).json({
+            ok: false,
+            message: "Error al generar reporte PDF",
+        });
+    }
+};
+exports.getKybCaseReportPdf = getKybCaseReportPdf;

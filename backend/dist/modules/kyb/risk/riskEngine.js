@@ -43,6 +43,7 @@ const getDecision = (score, hasCriticalRisk) => {
 const calculateKybRisk = (kybCase) => {
     const riskFactors = [];
     let hasCriticalRisk = false;
+    let needsUpdate = false;
     const documents = kybCase.documents || [];
     const findDocument = (type) => {
         return documents.find((document) => document.type === type);
@@ -73,6 +74,7 @@ const calculateKybRisk = (kybCase) => {
             Boolean(document.expirationDate &&
                 new Date(document.expirationDate).getTime() < Date.now());
         if (isExpired) {
+            needsUpdate = true;
             riskFactors.push(createRiskFactor({
                 code: "EXPIRED_DOCUMENT",
                 label: "Documento vencido",
@@ -104,6 +106,7 @@ const calculateKybRisk = (kybCase) => {
         }));
     }
     else if (!isCurrentMonth(csfDocument.issueDate)) {
+        needsUpdate = true;
         riskFactors.push(createRiskFactor({
             code: "CSF_NOT_CURRENT_MONTH",
             label: "CSF fuera del mes vigente",
@@ -252,6 +255,7 @@ const calculateKybRisk = (kybCase) => {
         const threeMonthsInMs = 1000 * 60 * 60 * 24 * 90;
         const isOlderThanThreeMonths = Date.now() - latestCheckDate > threeMonthsInMs;
         if (isOlderThanThreeMonths) {
+            needsUpdate = true;
             riskFactors.push(createRiskFactor({
                 code: "SAT_LIST_CHECK_OLDER_THAN_3_MONTHS",
                 label: "Revisión SAT vencida",
@@ -306,7 +310,23 @@ const calculateKybRisk = (kybCase) => {
         }
     }
     /**
-     * 9. Riesgo crítico.
+     * 9. Cambios reportados por el cliente
+     */
+    if (kybCase.clientReportedChanges) {
+        needsUpdate = true;
+        riskFactors.push(createRiskFactor({
+            code: "CLIENT_REPORTED_CHANGES",
+            label: "Cambios reportados por el cliente",
+            description: "El cliente reportó cambios y el expediente requiere actualización.",
+            points: 20,
+            severity: "medium",
+            evidence: {
+                clientReportedChanges: true,
+            },
+        }));
+    }
+    /**
+     * 10. Riesgo crítico.
      * En Paso 4, coincidencias críticas del SAT marcarán hasCriticalRisk = true.
      */
     const score = riskFactors.reduce((total, factor) => total + factor.points, 0);
@@ -323,6 +343,7 @@ const calculateKybRisk = (kybCase) => {
         score: cappedScore,
         decision,
         canApprove,
+        needsUpdate,
         riskFactors,
         explanation,
     };

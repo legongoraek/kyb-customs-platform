@@ -37,6 +37,19 @@ exports.satService = {
                 referenceUrl: DEFAULT_REFERENCE_URL,
                 rawMatch: {
                     entries: [],
+                    audit: {
+                        rfcSearched: rfc,
+                        checkedAt: new Date().toISOString(),
+                        result: "no_match",
+                        sourcesChecked: [
+                            "SAT_ART_69",
+                            "SAT_ART_69B",
+                            "SAT_ART_69B_BIS",
+                            "SAT_ART_49_BIS",
+                        ],
+                        sourceTable: "sat_list_entries",
+                        evidenceTable: "sat_list_checks",
+                    },
                 },
             });
             return {
@@ -63,6 +76,15 @@ exports.satService = {
                     situation: entry.situation,
                     publishedAt: entry.publishedAt,
                     referenceUrl: entry.referenceUrl,
+                    importedAt: entry.importedAt,
+                    rawData: entry.rawData || {},
+                    audit: {
+                        rfcSearched: rfc,
+                        checkedAt: new Date().toISOString(),
+                        result: "match",
+                        sourceTable: "sat_list_entries",
+                        evidenceTable: "sat_list_checks",
+                    },
                 },
             });
             checkIds.push(check.id);

@@ -14,6 +14,7 @@ const allowedOrigins = [
     env_1.env.frontendUrl,
     "http://localhost:5173",
     "http://localhost:5174",
+    "https://kyb-customs-platform.vercel.app",
 ].filter(Boolean);
 exports.app.use((0, cors_1.default)({
     origin: (origin, callback) => {

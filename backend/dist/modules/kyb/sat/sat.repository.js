@@ -54,6 +54,9 @@ exports.satRepository = {
       where case_id = $1
       order by source, checked_at desc
       `, [caseId]);
-        return result.rows;
+        return result.rows.map((row) => ({
+            ...row,
+            rawMatch: row.raw_match ? JSON.parse(row.raw_match) : undefined,
+        }));
     },
 };
