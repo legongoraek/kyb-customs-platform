@@ -2,6 +2,14 @@
 
 Plataforma KYB para agencia aduanal que evalúa si una persona moral mexicana es segura, requiere revisión o representa alto riesgo para operar comercio exterior.
 
+## Demo desplegada
+
+- **Frontend:** https://kyb-customs-platform.vercel.app/
+- **Backend / API:** https://kyb-customs-platform.onrender.com
+- **Repositorio:**  https://github.com/legongoraek/kyb-customs-platform
+
+> Nota: el backend está desplegado en Render (plan gratuito), por lo que puede tardar unos segundos en despertar tras periodos de inactividad (cold start). El frontend ejecuta `wakeUpBackend()` al cargar para mitigar esto.
+
 ## Tabla de contenidos
 
 - [Arquitectura](#arquitectura)
@@ -142,12 +150,16 @@ Actualmente no hay scripts globales en la raíz. Se ejecutan comandos por módul
 
 ### Frontend
 
+- Plataforma: Vercel
+- URL: https://kyb-customs-platform.vercel.app/
 - Comando build: `npm run build`
 - Carpeta de salida: `dist/`
 - Variable clave: `VITE_API_URL`
 
 ### Backend
 
+- Plataforma: Render
+- URL: https://kyb-customs-platform.onrender.com
 - Comando build: `npm run build`
 - Comando arranque: `npm start`
 - Entry point: `dist/server.js`

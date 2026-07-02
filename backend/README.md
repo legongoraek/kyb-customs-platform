@@ -97,7 +97,7 @@ Base URL local: `http://localhost:4000`
 
 ### Salud
 
-- `GET /api/health`  
+- `GET /api/health`
   Verifica disponibilidad de API y conexión a base de datos.
 
 ### Casos KYB
