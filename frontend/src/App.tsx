@@ -28,8 +28,26 @@ const SatImportLogsPage = lazy(() =>
 
 function PageLoader() {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
-      Cargando...
+    <div className="flex min-h-[60vh] items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900" />
+        </div>
+
+        <h2 className="text-lg font-black text-slate-900">
+          Cargando información
+        </h2>
+
+        <p className="mt-2 text-sm leading-6 text-slate-500">
+          Estamos preparando los datos del expediente KYB.
+        </p>
+
+        <div className="mt-6 space-y-3">
+          <div className="h-3 animate-pulse rounded-full bg-slate-100" />
+          <div className="h-3 animate-pulse rounded-full bg-slate-100" />
+          <div className="mx-auto h-3 w-2/3 animate-pulse rounded-full bg-slate-100" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -113,43 +113,43 @@ export function DashboardPage() {
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         <StatCard
           label="Total"
-          value={stats.total}
+          value={loading ? "..." : stats.total}
           active={statusFilter === "all"}
           onClick={() => setStatusFilter("all")}
         />
         <StatCard
           label="Pending"
-          value={stats.pending}
+          value={loading ? "..." : stats.pending}
           active={statusFilter === "pending"}
           onClick={() => toggleStatusFilter("pending")}
         />
         <StatCard
           label="Safe"
-          value={stats.safe}
+          value={loading ? "..." : stats.safe}
           active={statusFilter === "safe"}
           onClick={() => toggleStatusFilter("safe")}
         />
         <StatCard
           label="Review required"
-          value={stats.review}
+          value={loading ? "..." : stats.review}
           active={statusFilter === "review_required"}
           onClick={() => toggleStatusFilter("review_required")}
         />
         <StatCard
           label="High risk"
-          value={stats.highRisk}
+          value={loading ? "..." : stats.highRisk}
           active={statusFilter === "high_risk"}
           onClick={() => toggleStatusFilter("high_risk")}
         />
         <StatCard
           label="Can approve"
-          value={stats.canApprove}
+          value={loading ? "..." : stats.canApprove}
           active={statusFilter === "can_approve"}
           onClick={() => toggleStatusFilter("can_approve")}
         />
         <StatCard
           label="Blocked"
-          value={stats.blocked}
+          value={loading ? "..." : stats.blocked}
           active={statusFilter === "blocked"}
           onClick={() => toggleStatusFilter("blocked")}
         />
@@ -197,7 +197,62 @@ export function DashboardPage() {
         </div>
 
         {loading ? (
-          <div className="p-5 text-slate-500">Cargando expedientes...</div>
+          <div className="p-6">
+            <div className="flex min-h-[280px] items-center justify-center">
+              <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900" />
+                </div>
+
+                <h2 className="text-xl font-black text-slate-900">
+                  Cargando expedientes
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Estamos obteniendo los casos KYB, sus estados de riesgo y la
+                  información más reciente.
+                </p>
+
+                <div className="mt-7 space-y-4 text-left">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+                    <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+                    <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <div className="mb-4 h-3 w-36 animate-pulse rounded-full bg-slate-200" />
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="h-3 w-2/3 animate-pulse rounded-full bg-slate-200" />
+                          <div className="h-3 w-1/3 animate-pulse rounded-full bg-slate-200" />
+                        </div>
+                        <div className="h-7 w-24 animate-pulse rounded-full bg-slate-200" />
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="h-3 w-3/4 animate-pulse rounded-full bg-slate-200" />
+                          <div className="h-3 w-2/5 animate-pulse rounded-full bg-slate-200" />
+                        </div>
+                        <div className="h-7 w-24 animate-pulse rounded-full bg-slate-200" />
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="h-3 w-1/2 animate-pulse rounded-full bg-slate-200" />
+                          <div className="h-3 w-1/4 animate-pulse rounded-full bg-slate-200" />
+                        </div>
+                        <div className="h-7 w-24 animate-pulse rounded-full bg-slate-200" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : cases.length === 0 ? (
           <div className="p-8 text-center">
             <p className="font-semibold text-slate-700">

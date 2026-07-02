@@ -47,15 +47,73 @@ export function SatImportLogsPage() {
         <button
           onClick={handleImport}
           disabled={importing}
-          className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
+          className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white transition ${
+            importing
+              ? "cursor-not-allowed bg-slate-500"
+              : "bg-slate-900 hover:bg-slate-700"
+          }`}
         >
-          {importing ? "Importando..." : "Ejecutar importación SAT"}
+          {importing && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          )}
+          {importing ? "Importando fuentes SAT..." : "Ejecutar importación SAT"}
         </button>
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
         {loading ? (
-          <p className="text-sm text-slate-500">Cargando logs...</p>
+          <div className="flex min-h-[320px] items-center justify-center px-4 py-8">
+            <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900" />
+              </div>
+
+              <h2 className="text-xl font-black text-slate-900">
+                Cargando importaciones SAT
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Estamos obteniendo el historial de importaciones, fuentes públicas
+                consultadas y registros normalizados.
+              </p>
+
+              <div className="mt-7 space-y-4 text-left">
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <div className="mb-4 flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="h-3 w-3/4 animate-pulse rounded-full bg-slate-200" />
+                      <div className="h-3 w-1/2 animate-pulse rounded-full bg-slate-200" />
+                      <div className="h-3 w-2/5 animate-pulse rounded-full bg-slate-200" />
+                    </div>
+
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-200" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="h-3 w-2/3 animate-pulse rounded-full bg-slate-200" />
+                    <div className="h-3 w-1/2 animate-pulse rounded-full bg-slate-200" />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <div className="mb-4 flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="h-3 w-2/3 animate-pulse rounded-full bg-slate-200" />
+                      <div className="h-3 w-1/3 animate-pulse rounded-full bg-slate-200" />
+                      <div className="h-3 w-2/5 animate-pulse rounded-full bg-slate-200" />
+                    </div>
+
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-200" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="h-3 w-3/4 animate-pulse rounded-full bg-slate-200" />
+                    <div className="h-3 w-1/2 animate-pulse rounded-full bg-slate-200" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : logs.length === 0 ? (
           <p className="text-sm text-slate-500">
             Todavía no hay importaciones registradas.
