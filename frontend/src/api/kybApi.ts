@@ -5,6 +5,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
 });
 
+export const apiBaseUrl = api.defaults.baseURL;
+
 export type CreateKybCasePayload = {
   rfc: string;
   legalName: string;
