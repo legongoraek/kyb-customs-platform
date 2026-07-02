@@ -110,49 +110,64 @@ export function DashboardPage() {
         </Link>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-        <StatCard
-          label="Total"
-          value={loading ? "..." : stats.total}
-          active={statusFilter === "all"}
-          onClick={() => setStatusFilter("all")}
-        />
-        <StatCard
-          label="Pending"
-          value={loading ? "..." : stats.pending}
-          active={statusFilter === "pending"}
-          onClick={() => toggleStatusFilter("pending")}
-        />
-        <StatCard
-          label="Safe"
-          value={loading ? "..." : stats.safe}
-          active={statusFilter === "safe"}
-          onClick={() => toggleStatusFilter("safe")}
-        />
-        <StatCard
-          label="Review required"
-          value={loading ? "..." : stats.review}
-          active={statusFilter === "review_required"}
-          onClick={() => toggleStatusFilter("review_required")}
-        />
-        <StatCard
-          label="High risk"
-          value={loading ? "..." : stats.highRisk}
-          active={statusFilter === "high_risk"}
-          onClick={() => toggleStatusFilter("high_risk")}
-        />
-        <StatCard
-          label="Can approve"
-          value={loading ? "..." : stats.canApprove}
-          active={statusFilter === "can_approve"}
-          onClick={() => toggleStatusFilter("can_approve")}
-        />
-        <StatCard
-          label="Blocked"
-          value={loading ? "..." : stats.blocked}
-          active={statusFilter === "blocked"}
-          onClick={() => toggleStatusFilter("blocked")}
-        />
+      <section className="-mx-4 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+        <div className="flex gap-4 overflow-x-auto pb-3 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0 xl:grid-cols-7">
+          <StatCard
+            label="Total"
+            value={loading ? "..." : stats.total}
+            active={statusFilter === "all"}
+            onClick={() => setStatusFilter("all")}
+            className="w-[150px] shrink-0 lg:w-auto lg:shrink"
+          />
+
+          <StatCard
+            label="Pending"
+            value={loading ? "..." : stats.pending}
+            active={statusFilter === "pending"}
+            onClick={() => toggleStatusFilter("pending")}
+            className="w-[150px] shrink-0 lg:w-auto lg:shrink"
+          />
+
+          <StatCard
+            label="Safe"
+            value={loading ? "..." : stats.safe}
+            active={statusFilter === "safe"}
+            onClick={() => toggleStatusFilter("safe")}
+            className="w-[150px] shrink-0 lg:w-auto lg:shrink"
+          />
+
+          <StatCard
+            label="Review required"
+            value={loading ? "..." : stats.review}
+            active={statusFilter === "review_required"}
+            onClick={() => toggleStatusFilter("review_required")}
+            className="w-[190px] shrink-0 lg:w-auto lg:shrink"
+          />
+
+          <StatCard
+            label="High risk"
+            value={loading ? "..." : stats.highRisk}
+            active={statusFilter === "high_risk"}
+            onClick={() => toggleStatusFilter("high_risk")}
+            className="w-[150px] shrink-0 lg:w-auto lg:shrink"
+          />
+
+          <StatCard
+            label="Can approve"
+            value={loading ? "..." : stats.canApprove}
+            active={statusFilter === "can_approve"}
+            onClick={() => toggleStatusFilter("can_approve")}
+            className="w-[170px] shrink-0 lg:w-auto lg:shrink"
+          />
+
+          <StatCard
+            label="Blocked"
+            value={loading ? "..." : stats.blocked}
+            active={statusFilter === "blocked"}
+            onClick={() => toggleStatusFilter("blocked")}
+            className="w-[150px] shrink-0 lg:w-auto lg:shrink"
+          />
+        </div>
       </section>
 
       <RiskDistributionChart

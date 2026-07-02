@@ -20,7 +20,7 @@ export function SatEvidenceList({ checks }: Props) {
           Todavía no se ha ejecutado una revisión SAT.
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-[400px] overflow-y-auto overflow-x-hidden pr-1">
           {checks.map((check) => (
             <div
               key={check.id}

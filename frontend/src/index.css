@@ -6,6 +6,7 @@
     "Segoe UI Symbol";
   color: #172033;
   background: #f5f7fb;
+  overflow-x: hidden;
 }
 
 body {

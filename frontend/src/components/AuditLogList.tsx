@@ -34,11 +34,11 @@ export function AuditLogList({ logs }: Props) {
                     {log.action}
                   </p>
 
-                  <p className="mt-1 break-words text-sm leading-6 text-slate-600">
+                  <p className="mt-3 max-w-full break-words text-sm leading-6 text-slate-600">
                     {log.message}
                   </p>
 
-                  <p className="mt-1 break-words text-xs text-slate-400">
+                  <p className="mt-1 max-w-full break-all text-xs text-slate-400">
                     Entidad: {log.entityType}
                   </p>
                 </div>
