@@ -2,6 +2,21 @@
 
 Plataforma KYB para agencia aduanal que evalúa si una persona moral mexicana es segura, requiere revisión o representa alto riesgo para operar comercio exterior.
 
+## Tabla de contenidos
+
+- [Arquitectura](#arquitectura)
+- [Stack tecnológico](#stack-tecnologico)
+- [Funcionalidades principales](#funcionalidades-principales)
+- [Estructura del repositorio](#estructura-del-repositorio)
+- [Requisitos](#requisitos)
+- [Puesta en marcha rápida](#puesta-en-marcha-rapida)
+- [Variables de entorno mínimas](#variables-de-entorno-minimas)
+- [Scripts útiles](#scripts-utiles)
+- [Documentación por módulo](#documentacion-por-modulo)
+- [Flujo funcional sugerido](#flujo-funcional-sugerido)
+- [Despliegue](#despliegue)
+- [Revisión SAT y trazabilidad](#revision-sat-y-trazabilidad)
+
 ## Arquitectura
 
 Este repositorio está organizado como monorepo simple con dos aplicaciones:
@@ -91,6 +106,10 @@ VITE_API_URL=http://localhost:4000
 
 ## Scripts útiles
 
+### Raíz del monorepo
+
+Actualmente no hay scripts globales en la raíz. Se ejecutan comandos por módulo (`backend` y `frontend`).
+
 ### Backend
 
 - `npm run dev`: desarrollo con recarga.
@@ -109,6 +128,30 @@ VITE_API_URL=http://localhost:4000
 
 - Backend: ver [backend/README.md](backend/README.md)
 - Frontend: ver [frontend/README.md](frontend/README.md)
+
+## Flujo funcional sugerido
+
+1. Crear expediente KYB desde frontend.
+2. Registrar metadata documental.
+3. Ejecutar validación SAT para el RFC.
+4. Ejecutar motor de riesgo.
+5. Revisar evidencia y auditoría.
+6. Aprobar solo si el resultado es compatible con política de riesgo.
+
+## Despliegue
+
+### Frontend
+
+- Comando build: `npm run build`
+- Carpeta de salida: `dist/`
+- Variable clave: `VITE_API_URL`
+
+### Backend
+
+- Comando build: `npm run build`
+- Comando arranque: `npm start`
+- Entry point: `dist/server.js`
+- Variables clave: `PORT`, `DATABASE_URL`, `FRONTEND_URL`, `NODE_ENV`
 
 ## Revisión SAT y trazabilidad
 

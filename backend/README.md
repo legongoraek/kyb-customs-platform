@@ -2,6 +2,19 @@
 
 API REST para gestionar expedientes KYB, validaciones SAT, scoring de riesgo y generación de reportes.
 
+## Tabla de contenidos
+
+- [Requisitos](#requisitos)
+- [Instalación](#instalacion)
+- [Variables de entorno](#variables-de-entorno)
+- [Scripts](#scripts)
+- [Estructura principal](#estructura-principal)
+- [Endpoints](#endpoints)
+- [Formato de respuesta](#formato-de-respuesta)
+- [CORS](#cors)
+- [Flujo recomendado de desarrollo](#flujo-recomendado-de-desarrollo)
+- [Build y ejecución en producción](#build-y-ejecucion-en-produccion)
+
 ## Requisitos
 
 - Node.js 20+
@@ -30,6 +43,7 @@ Notas:
 
 - `DATABASE_URL` es obligatoria para conexión a base de datos.
 - Si el host es Supabase o `NODE_ENV=production`, la conexión usa SSL automáticamente.
+- `FRONTEND_URL` controla el origen permitido por CORS.
 
 ## Scripts
 
@@ -108,6 +122,26 @@ Base URL local: `http://localhost:4000`
 - `POST /api/kyb-cases/sat/import`
 - `GET /api/kyb-cases/sat/import-logs`
 
+## Formato de respuesta
+
+La API responde en formato JSON y usa una estructura consistente:
+
+- Respuesta exitosa: `{ ok: true, data: ... }`
+- Respuesta de error: `{ ok: false, message: "..." }`
+
+Los códigos HTTP dependen del caso (`200`, `201`, `400`, `404`, `500`, etc.).
+
+## CORS
+
+Por defecto se permiten estos orígenes:
+
+- `FRONTEND_URL` (si está definido)
+- `http://localhost:5173`
+- `http://localhost:5174`
+- `https://kyb-customs-platform.vercel.app`
+
+Si necesitas otro dominio, agrégalo en la configuración de CORS de `src/app.ts`.
+
 ## Flujo recomendado de desarrollo
 
 1. Levantar base de datos y configurar `.env`.
@@ -116,6 +150,8 @@ Base URL local: `http://localhost:4000`
 4. Crear caso KYB y agregar metadata documental.
 5. Ejecutar revisión SAT y scoring de riesgo.
 6. Generar/consultar reporte JSON o PDF.
+
+Tip: el endpoint de salud (`GET /api/health`) es el primer indicador para validar conectividad de base de datos.
 
 ## Build y ejecución en producción
 

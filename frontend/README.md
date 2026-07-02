@@ -2,6 +2,19 @@
 
 Aplicación web para captura, análisis y seguimiento de expedientes KYB.
 
+## Tabla de contenidos
+
+- [Requisitos](#requisitos)
+- [Instalación](#instalacion)
+- [Variables de entorno](#variables-de-entorno)
+- [Scripts](#scripts)
+- [Estructura principal](#estructura-principal)
+- [Navegación principal](#navegacion-principal)
+- [Capa API](#capa-api)
+- [Flujo funcional típico](#flujo-funcional-tipico)
+- [Ejecución](#ejecucion)
+- [Build de producción y despliegue](#build-de-produccion-y-despliegue)
+
 ## Requisitos
 
 - Node.js 20+
@@ -71,7 +84,9 @@ frontend/
 - `/cases/:id`: detalle del expediente, evidencia, score y aprobación.
 - `/sat/imports`: historial de importaciones SAT.
 
-## Capa API (`src/api/kybApi.ts`)
+Todas las rutas están montadas con React Router y carga diferida (lazy loading) para optimizar el tiempo de primer render.
+
+## Capa API
 
 Funciones principales del cliente HTTP:
 
@@ -107,3 +122,11 @@ npm run dev
 npm run build
 npm run preview
 ```
+
+## Build de producción y despliegue
+
+- Build command: `npm run build`
+- Output directory: `dist/`
+- Variable crítica: `VITE_API_URL`
+
+Para despliegue en Vercel, valida que `VITE_API_URL` apunte al backend publicado.
