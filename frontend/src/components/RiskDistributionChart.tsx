@@ -9,6 +9,7 @@ import {
   YAxis,
 } from "recharts";
 import type { KybCase } from "../types/kyb";
+import { X } from "lucide-react";
 
 export type RiskDistributionFilter =
   | "all"
@@ -80,9 +81,11 @@ export function RiskDistributionChart({
         {isInteractive && activeFilter !== "all" && (
           <button
             onClick={() => onSelectFilter("all")}
-            className="rounded-xl border border-slate-300 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+            aria-label="Quitar filtro"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-slate-300 p-2 text-xs font-bold text-slate-600 hover:bg-slate-50 sm:px-3 sm:py-2"
           >
-            Quitar filtro
+            <X size={14} />
+            <span className="hidden sm:inline">Quitar filtro</span>
           </button>
         )}
       </div>

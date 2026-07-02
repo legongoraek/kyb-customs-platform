@@ -164,9 +164,9 @@ export function DashboardPage() {
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <h2 className="font-black text-slate-900">Casos recientes</h2>
-
-          <div className="flex items-center gap-3">
-            <div className="relative">
+ 
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <div className="relative min-w-0 flex-1 sm:flex-none">
               <Search
                 size={16}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -176,20 +176,21 @@ export function DashboardPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Buscar por razón social o RFC..."
-                className="w-64 rounded-xl border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-slate-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-slate-500 focus:outline-none sm:w-64"
               />
             </div>
-
+ 
             {hasActiveFilters && (
               <button
                 onClick={() => {
                   setStatusFilter("all");
                   setSearch("");
                 }}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                aria-label="Limpiar filtros"
+                className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-slate-300 p-2 text-xs font-bold text-slate-600 hover:bg-slate-50 sm:px-3 sm:py-2"
               >
                 <X size={14} />
-                Limpiar filtros
+                <span className="hidden sm:inline">Limpiar filtros</span>
               </button>
             )}
           </div>
@@ -223,21 +224,22 @@ export function DashboardPage() {
           </div>
         ) : (
           <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
-            {filteredCases.map((item) => (
-              <Link
-                key={item.id}
-                to={`/cases/${item.id}`}
-                className="grid gap-4 px-5 py-4 hover:bg-slate-50 md:grid-cols-[1fr_auto_auto]"
-              >
-                <div>
-                  <p className="font-bold text-slate-900">
-                    {item.client.legalName}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    RFC: {item.client.rfc}
-                  </p>
-                </div>
+          {filteredCases.map((item) => (
+            <Link
+              key={item.id}
+              to={`/cases/${item.id}`}
+              className="flex flex-col gap-3 px-5 py-4 hover:bg-slate-50 md:grid md:grid-cols-[1fr_auto_auto] md:items-center md:gap-4"
+            >
+              <div>
+                <p className="font-bold text-slate-900">
+                  {item.client.legalName}
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  RFC: {item.client.rfc}
+                </p>
+              </div>
 
+              <div className="flex items-center justify-between gap-3 md:contents">
                 <div className="flex items-center">
                   <RiskBadge decision={item.decision} />
                 </div>
@@ -245,9 +247,10 @@ export function DashboardPage() {
                 <div className="text-sm text-slate-500">
                   {formatDateTime(item.updatedAt)}
                 </div>
-              </Link>
-            ))}
-          </div>
+              </div>
+            </Link>
+          ))}
+        </div>
         )}
       </section>
     </div>

@@ -19,6 +19,7 @@ import { ScoreCard } from "../components/ScoreCard";
 import { InfoCard } from "../components/InfoCard";
 import { AuditLogList } from "../components/AuditLogList";
 import { SatEvidenceList } from "../components/SatEvidenceList";
+import { RiskExplanationDetail } from "../components/RiskExplanationDetail";
 import type { AuditLog } from "../types/kyb";
 
 export function CaseDetailPage() {
@@ -239,13 +240,20 @@ export function CaseDetailPage() {
 
         {(riskResult?.explanation || activeRiskFactors?.length > 0) && (
           <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex gap-3">
-              <AlertTriangle className="mt-1 text-amber-600" size={20} />
-              <p className="text-sm leading-6 text-slate-700">
-                {riskResult?.explanation ||
-                  "El expediente ya tiene factores de riesgo calculados."}
-              </p>
-            </div>
+            <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+              Factores de riesgo
+            </p>
+
+            {riskResult?.explanation ? (
+              <RiskExplanationDetail explanation={riskResult.explanation} />
+            ) : (
+              <div className="mt-3 flex gap-3">
+                <AlertTriangle className="mt-1 shrink-0 text-amber-600" size={20} />
+                <p className="text-sm leading-6 text-slate-700">
+                  El expediente ya tiene factores de riesgo calculados.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </section>
