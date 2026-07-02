@@ -111,7 +111,7 @@ export function RiskExplanationDetail({ explanation }: Props) {
             <span className="mt-0.5 inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-red-100 px-2 text-xs font-black text-red-700">
               +{factor.points}
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900">
                 {factor.title}
               </p>
@@ -123,7 +123,7 @@ export function RiskExplanationDetail({ explanation }: Props) {
         ))}
       </div>
 
-      {parsed?.suggestedAction && (
+      {parsed.suggestedAction && (
         <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
           <Info size={16} className="mt-0.5 shrink-0" />
           <p>
