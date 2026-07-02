@@ -30,7 +30,7 @@ export function AuditLogList({ logs }: Props) {
             >
               <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1 overflow-hidden">
-                  <p className="max-w-full break-all rounded-xl bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-slate-700 ring-1 ring-slate-200">
+                  <p className="max-w-full break-all rounded-xl bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-slate-700 ring-1 ring-slate-200 mt-1">
                     {log.action}
                   </p>
 

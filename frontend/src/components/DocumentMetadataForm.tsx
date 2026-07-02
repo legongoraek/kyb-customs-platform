@@ -27,6 +27,14 @@ type Props = {
   onSubmit: (payload: AddDocumentMetadataPayload) => Promise<void>;
 };
 
+const fieldWrapperClass = "min-w-0 max-w-full space-y-1";
+
+const inputClass =
+  "block min-w-0 max-w-full w-full rounded-xl border border-slate-300 px-3 py-2 text-sm";
+
+const dateInputClass =
+  "block min-w-0 max-w-full w-full appearance-none rounded-xl border border-slate-300 px-3 py-2 text-sm";
+
 export function DocumentMetadataForm({ onSubmit }: Props) {
   const [form, setForm] = useState<AddDocumentMetadataPayload>({
     type: "CONSTANCIA_SITUACION_FISCAL",
@@ -88,14 +96,14 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="min-w-0 max-w-full overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
     >
       <h3 className="text-lg font-black text-slate-900">
         Registrar metadata auditable
       </h3>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <label className="space-y-1">
+      <div className="mt-5 grid min-w-0 max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+        <label className={fieldWrapperClass}>
           <span className="text-sm font-semibold text-slate-700">
             Tipo de documento
           </span>
@@ -104,7 +112,7 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
             onChange={(event) =>
               updateField("type", event.target.value as KybDocumentType)
             }
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className={inputClass}
           >
             {DOCUMENT_TYPES.map((document) => (
               <option key={document.value} value={document.value}>
@@ -114,7 +122,7 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
           </select>
         </label>
 
-        <label className="space-y-1">
+        <label className={fieldWrapperClass}>
           <span className="text-sm font-semibold text-slate-700">
             Fecha emisión
           </span>
@@ -122,11 +130,11 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
             type="date"
             value={form.issueDate}
             onChange={(event) => updateField("issueDate", event.target.value)}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className={dateInputClass}
           />
         </label>
 
-        <label className="space-y-1">
+        <label className={fieldWrapperClass}>
           <span className="text-sm font-semibold text-slate-700">
             Fecha vencimiento
           </span>
@@ -136,11 +144,11 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
             onChange={(event) =>
               updateField("expirationDate", event.target.value)
             }
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className={dateInputClass}
           />
         </label>
 
-        <label className="space-y-1">
+        <label className={fieldWrapperClass}>
           <span className="text-sm font-semibold text-slate-700">
             RFC extraído
           </span>
@@ -150,11 +158,11 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
               updateField("extractedRfc", event.target.value)
             }
             placeholder="ABC010101AB1"
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className={inputClass}
           />
         </label>
 
-        <label className="space-y-1 md:col-span-2">
+        <label className={fieldWrapperClass}>
           <span className="text-sm font-semibold text-slate-700">
             Razón social extraída
           </span>
@@ -164,11 +172,11 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
               updateField("extractedLegalName", event.target.value)
             }
             placeholder="COMERCIALIZADORA ABC SA DE CV"
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className={inputClass}
           />
         </label>
 
-        <label className="space-y-1 md:col-span-2">
+        <label className={fieldWrapperClass}>
           <span className="text-sm font-semibold text-slate-700">
             Domicilio extraído
           </span>
@@ -178,11 +186,11 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
               updateField("extractedAddress", event.target.value)
             }
             placeholder="Calle 60 Centro Mérida Yucatán"
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className={inputClass}
           />
         </label>
 
-        <label className="space-y-1 md:col-span-2">
+        <label className={fieldWrapperClass}>
           <span className="text-sm font-semibold text-slate-700">
             Representante extraído
           </span>
@@ -192,7 +200,7 @@ export function DocumentMetadataForm({ onSubmit }: Props) {
               updateField("extractedRepresentative", event.target.value)
             }
             placeholder="Juan Pérez López"
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className={inputClass}
           />
         </label>
       </div>
