@@ -11,6 +11,42 @@ const getParamId = (req) => {
     const { id } = req.params;
     return Array.isArray(id) ? id[0] : id;
 };
+const recalculateAndPersistKybRisk = async (caseId, input) => {
+    const updatedCase = await kyb_repository_1.kybRepository.findCaseById(caseId);
+    if (!updatedCase) {
+        return null;
+    }
+    const riskResult = (0, riskEngine_1.calculateKybRisk)(updatedCase);
+    const savedRisk = await kyb_repository_1.kybRepository.saveRiskResult({
+        caseId: updatedCase.id,
+        score: riskResult.score,
+        decision: riskResult.decision,
+        canApprove: riskResult.canApprove,
+        needsUpdate: riskResult.needsUpdate,
+        explanation: riskResult.explanation,
+        riskFactors: riskResult.riskFactors,
+    });
+    await kyb_repository_1.kybRepository.createAuditLog({
+        caseId: updatedCase.id,
+        action: input.action,
+        entityType: input.entityType || "risk_score",
+        entityId: input.entityId || savedRisk.riskScoreId,
+        message: input.message,
+        metadata: {
+            triggeredBy: input.triggeredBy,
+            score: riskResult.score,
+            decision: riskResult.decision,
+            canApprove: riskResult.canApprove,
+            needsUpdate: riskResult.needsUpdate,
+            totalFactors: riskResult.riskFactors.length,
+            riskScoreId: savedRisk.riskScoreId,
+        },
+    });
+    return {
+        riskScoreId: savedRisk.riskScoreId,
+        riskResult,
+    };
+};
 const createKybCase = async (req, res) => {
     const validation = kyb_schemas_1.createKybCaseSchema.safeParse(req.body);
     if (!validation.success) {
@@ -134,10 +170,18 @@ const addKybDocumentMetadata = async (req, res) => {
                 status: document.status,
             },
         });
+        const recalculatedRisk = await recalculateAndPersistKybRisk(kybCase.id, {
+            action: "KYB_RISK_RECALCULATED_AFTER_DOCUMENT_METADATA",
+            message: "Score de riesgo KYB recalculado automáticamente después de registrar metadata documental.",
+            triggeredBy: "document_metadata_added",
+            entityType: "kyb_document",
+            entityId: document.id,
+        });
         return res.status(201).json({
             ok: true,
-            message: "Metadata de documento registrada correctamente",
+            message: "Metadata de documento registrada correctamente y score KYB recalculado automáticamente",
             data: document,
+            riskResult: recalculatedRisk?.riskResult || null,
         });
     }
     catch (error) {
@@ -151,37 +195,26 @@ const addKybDocumentMetadata = async (req, res) => {
 exports.addKybDocumentMetadata = addKybDocumentMetadata;
 const runKybCheck = async (req, res) => {
     try {
-        const kybCase = await kyb_repository_1.kybRepository.findCaseById(getParamId(req));
+        const caseId = getParamId(req);
+        const kybCase = await kyb_repository_1.kybRepository.findCaseById(caseId);
         if (!kybCase) {
             return res.status(404).json({
                 ok: false,
                 message: "Expediente KYB no encontrado",
             });
         }
-        const riskResult = (0, riskEngine_1.calculateKybRisk)(kybCase);
-        const savedRisk = await kyb_repository_1.kybRepository.saveRiskResult({
-            caseId: kybCase.id,
-            score: riskResult.score,
-            decision: riskResult.decision,
-            canApprove: riskResult.canApprove,
-            needsUpdate: riskResult.needsUpdate,
-            explanation: riskResult.explanation,
-            riskFactors: riskResult.riskFactors,
-        });
-        await kyb_repository_1.kybRepository.createAuditLog({
-            caseId: kybCase.id,
+        const recalculatedRisk = await recalculateAndPersistKybRisk(kybCase.id, {
             action: "KYB_RISK_CHECK_EXECUTED",
-            entityType: "risk_score",
-            entityId: savedRisk.riskScoreId,
             message: "Score de riesgo KYB calculado correctamente.",
-            metadata: {
-                score: riskResult.score,
-                decision: riskResult.decision,
-                canApprove: riskResult.canApprove,
-                needsUpdate: riskResult.needsUpdate,
-                totalFactors: riskResult.riskFactors.length,
-            },
+            triggeredBy: "manual_risk_check",
         });
+        if (!recalculatedRisk) {
+            return res.status(404).json({
+                ok: false,
+                message: "Expediente KYB no encontrado",
+            });
+        }
+        const { riskResult } = recalculatedRisk;
         return res.json({
             ok: true,
             message: "Validación KYB ejecutada",
@@ -276,10 +309,18 @@ const runSatListCheck = async (req, res) => {
                 checkIds: result.checkIds,
             },
         });
+        const recalculatedRisk = await recalculateAndPersistKybRisk(kybCase.id, {
+            action: "KYB_RISK_RECALCULATED_AFTER_SAT_CHECK",
+            message: "Score de riesgo KYB recalculado automáticamente después de la revisión SAT.",
+            triggeredBy: "sat_list_check",
+            entityType: "sat_list_check",
+            entityId: result.checkIds?.[0],
+        });
         return res.json({
             ok: true,
-            message: "Revisión SAT ejecutada correctamente",
+            message: "Revisión SAT ejecutada correctamente y score KYB recalculado automáticamente",
             data: result,
+            riskResult: recalculatedRisk?.riskResult || null,
         });
     }
     catch (error) {

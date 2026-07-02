@@ -7,16 +7,100 @@ exports.kybReportService = void 0;
 const pdfkit_1 = __importDefault(require("pdfkit"));
 const writeSectionTitle = (doc, title) => {
     doc.moveDown(1);
-    doc.fontSize(15).font("Helvetica-Bold").text(title);
+    doc.fontSize(15).font("Helvetica-Bold").fillColor("#000000").text(title);
     doc.moveDown(0.4);
 };
 const writeKeyValue = (doc, label, value) => {
     doc
         .fontSize(10)
         .font("Helvetica-Bold")
+        .fillColor("#000000")
         .text(`${label}: `, { continued: true })
         .font("Helvetica")
         .text(value === undefined || value === null || value === "" ? "—" : String(value));
+};
+const DECISION_LABELS = {
+    safe: "Safe",
+    review_required: "Revisión requerida",
+    high_risk: "Alto riesgo",
+};
+const DECISION_COLORS = {
+    safe: "#047857",
+    review_required: "#b45309",
+    high_risk: "#b91c1c",
+};
+function parseRiskSummary(text) {
+    const headerMatch = text.match(/Score\s+(\d+)\.\s*Decisión:\s*([a-z_]+)\./i);
+    const score = headerMatch ? Number(headerMatch[1]) : null;
+    const decision = headerMatch ? headerMatch[2] : null;
+    const actionIndex = text.indexOf("Acción sugerida:");
+    const suggestedAction = actionIndex >= 0
+        ? text.slice(actionIndex + "Acción sugerida:".length).trim()
+        : null;
+    return { score, decision, suggestedAction };
+}
+const writeRiskScoreSummary = (doc, latestRiskScore) => {
+    const parsed = parseRiskSummary(latestRiskScore.explanation || "");
+    const score = parsed.score ?? latestRiskScore.score;
+    const decisionKey = parsed.decision ?? latestRiskScore.decision;
+    const decisionLabel = DECISION_LABELS[decisionKey] || decisionKey || "—";
+    const decisionColor = DECISION_COLORS[decisionKey] || "#334155";
+    // Score grande + "/100"
+    doc
+        .font("Helvetica-Bold")
+        .fontSize(12)
+        .fillColor("#0f172a")
+        .text(`${score}`, { continued: true })
+        .font("Helvetica")
+        .fontSize(12)
+        .fillColor("#64748b")
+        .text(" / 100");
+    // Badge de decisión
+    doc.moveDown(0.15);
+    doc
+        .font("Helvetica-Bold")
+        .fontSize(11)
+        .fillColor(decisionColor)
+        .text(`Decisión: ${decisionLabel}`);
+    // Fecha de cálculo
+    doc.moveDown(0.2);
+    doc
+        .font("Helvetica")
+        .fontSize(9)
+        .fillColor("#64748b")
+        .text(`Calculado: ${latestRiskScore.created_at}`);
+    doc.fillColor("#000000");
+    // Recuadro de acción sugerida
+    if (parsed.suggestedAction) {
+        doc.moveDown(0.6);
+        const boxX = doc.x;
+        const boxWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+        const label = "Acción sugerida: ";
+        const contentWidth = boxWidth - 20;
+        doc.font("Helvetica-Bold").fontSize(9.5);
+        const labelHeight = doc.heightOfString(label, { width: contentWidth, continued: true });
+        doc.font("Helvetica").fontSize(9.5);
+        const textHeight = doc.heightOfString(`${label}${parsed.suggestedAction}`, {
+            width: contentWidth,
+        });
+        void labelHeight;
+        const boxY = doc.y;
+        const boxHeight = textHeight + 16;
+        doc.save();
+        doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 6).fill("#fffbeb");
+        doc.restore();
+        doc
+            .fillColor("#92400e")
+            .font("Helvetica-Bold")
+            .fontSize(9.5)
+            .text(label, boxX + 10, boxY + 8, { continued: true, width: contentWidth })
+            .font("Helvetica")
+            .fillColor("#78350f")
+            .text(parsed.suggestedAction, { width: contentWidth });
+        doc.fillColor("#000000");
+        doc.x = boxX;
+        doc.y = boxY + boxHeight + 6;
+    }
 };
 exports.kybReportService = {
     buildJsonReport(data) {
@@ -62,13 +146,11 @@ exports.kybReportService = {
         writeKeyValue(doc, "Decisión", data.kybCase.decision || "Pendiente");
         writeKeyValue(doc, "Score", data.kybCase.score);
         writeSectionTitle(doc, "Score de riesgo");
-        if (data.latestRiskScore?.explanation) {
-            doc.font("Helvetica").fontSize(10).text(data.latestRiskScore.explanation, {
-                align: "left",
-            });
+        if (data.latestRiskScore) {
+            writeRiskScoreSummary(doc, data.latestRiskScore);
         }
         else {
-            doc.font("Helvetica").fontSize(10).text("No hay score calculado.");
+            doc.font("Helvetica").fontSize(10).fillColor("#000000").text("No hay score calculado.");
         }
         writeSectionTitle(doc, "Factores de riesgo");
         if (data.kybCase.riskFactors.length === 0) {

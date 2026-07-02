@@ -427,13 +427,15 @@ export const calculateKybRisk = (kybCase: KybCase) => {
   const score = riskFactors.reduce((total, factor) => total + factor.points, 0);
   const cappedScore = Math.min(score, 100);
   const decision = getDecision(cappedScore, hasCriticalRisk);
-  const canApprove = decision === KYB_DECISIONS.SAFE;
+  const canApprove =
+    decision === KYB_DECISIONS.SAFE && needsUpdate === false;
 
   const explanation = buildRiskExplanation({
     score: cappedScore,
     decision,
     riskFactors,
     canApprove,
+    needsUpdate,
   });
 
   return {
@@ -451,8 +453,9 @@ const buildRiskExplanation = (input: {
   decision: KybDecision;
   canApprove: boolean;
   riskFactors: RiskFactor[];
+  needsUpdate: boolean;
 }) => {
-  const { score, decision, canApprove, riskFactors } = input;
+  const { score, decision, canApprove, riskFactors, needsUpdate } = input;
 
   if (riskFactors.length === 0) {
     return "El expediente no presenta factores de riesgo. Puede aprobarse.";
@@ -464,13 +467,15 @@ const buildRiskExplanation = (input: {
 
   const hasCriticalFactor = riskFactors.some(
     (factor) => factor.severity === "critical"
-);
+  );
 
     const action = canApprove
-        ? "Acción sugerida: aprobar expediente."
+      ? "Acción sugerida: aprobar expediente."
+      : needsUpdate
+        ? "Acción sugerida: actualizar el expediente antes de aprobar."
         : decision === KYB_DECISIONS.HIGH_RISK && hasCriticalFactor
-            ? "Acción sugerida: bloquear aprobación por riesgo crítico."
-            : decision === KYB_DECISIONS.HIGH_RISK
+          ? "Acción sugerida: bloquear aprobación por riesgo crítico."
+          : decision === KYB_DECISIONS.HIGH_RISK
             ? "Acción sugerida: bloquear aprobación hasta corregir documentos, discrepancias o revisiones pendientes."
             : "Acción sugerida: corregir información, actualizar documentos o enviar a revisión manual.";
 
