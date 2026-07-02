@@ -119,7 +119,7 @@ export function SatImportLogsPage() {
             Todavía no hay importaciones registradas.
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto px-1 py-2">
             {logs.map((log) => (
               <div
                 key={log.id}
