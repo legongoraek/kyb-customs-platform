@@ -1,6 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { wakeUpBackend } from "./api/kybApi";
 
 const DashboardPage = lazy(() =>
   import("./pages/DashboardPage").then((module) => ({
@@ -82,5 +83,9 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
+  useEffect(() => {
+    wakeUpBackend();
+  }, []);
+
   return <RouterProvider router={router} />;
 }

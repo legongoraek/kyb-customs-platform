@@ -111,3 +111,11 @@ export const kybApi = {
   },
 
 };
+
+export const wakeUpBackend = async () => {
+  try {
+    await api.get("/api/health");
+  } catch (error) {
+    console.warn("Backend wake up failed:", error);
+  }
+};
