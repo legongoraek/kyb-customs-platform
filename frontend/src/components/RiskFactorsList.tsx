@@ -47,12 +47,15 @@ export function RiskFactorsList({ factors }: Props) {
             key={`${factor.code}-${index}`}
             className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
           >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="font-black text-slate-900">{factor.label}</h4>
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <h4 className="min-w-0 break-words font-black text-slate-900">
+                    {factor.label}
+                  </h4>
+
                   <span
-                    className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+                    className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${
                       severityClass[factor.severity]
                     }`}
                   >
@@ -60,18 +63,20 @@ export function RiskFactorsList({ factors }: Props) {
                   </span>
                 </div>
 
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 break-words text-sm leading-6 text-slate-600">
                   {factor.description}
                 </p>
 
-                <p className="mt-2 text-xs font-mono text-slate-400">
+                <p className="mt-2 mb-1 max-w-full break-all rounded-xl bg-white px-3 py-2 font-mono text-xs text-slate-500 ring-1 ring-slate-200 sm:inline-block">
                   {factor.code}
                 </p>
               </div>
 
-              <span className="rounded-full bg-white px-3 py-1 text-sm font-black text-slate-900 shadow-sm">
-                +{factor.points}
-              </span>
+              <div className="flex justify-end sm:block">
+                <span className="inline-flex shrink-0 rounded-full bg-white px-3 py-1 text-sm font-black text-slate-900 shadow-sm">
+                  +{factor.points}
+                </span>
+              </div>
             </div>
           </div>
         ))}
