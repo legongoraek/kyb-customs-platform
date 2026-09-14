@@ -1,19 +1,6 @@
 # Frontend - KYB Customs Platform
 
-Aplicación web para captura, análisis y seguimiento de expedientes KYB.
-
-## Tabla de contenidos
-
-- [Requisitos](#requisitos)
-- [Instalación](#instalacion)
-- [Variables de entorno](#variables-de-entorno)
-- [Scripts](#scripts)
-- [Estructura principal](#estructura-principal)
-- [Navegación principal](#navegacion-principal)
-- [Capa API](#capa-api)
-- [Flujo funcional típico](#flujo-funcional-tipico)
-- [Ejecución](#ejecucion)
-- [Build de producción y despliegue](#build-de-produccion-y-despliegue)
+Frontend React/Vite de una prueba técnica KYB para comercio exterior. La raíz pública funciona como case study del trabajo realizado y la demo operativa vive bajo `/app`.
 
 ## Requisitos
 
@@ -30,61 +17,79 @@ npm install
 
 ## Variables de entorno
 
-Crea un archivo `.env` dentro de `frontend`:
-
 ```env
 VITE_API_URL=http://localhost:4000
+VITE_SITE_URL=http://localhost:5173
 ```
 
-Si no se define, la app usa `http://localhost:4000` como valor por defecto.
+`VITE_API_URL` apunta al backend. `VITE_SITE_URL` controla el origen canonical; si no se define, se utiliza `https://kyb-customs-platform.vercel.app`.
 
 ## Scripts
 
-- `npm run dev`: levanta servidor de desarrollo con Vite.
-- `npm run build`: compila TypeScript y genera build de producción.
-- `npm run preview`: sirve localmente el build de producción.
+- `npm run dev`: servidor de desarrollo Vite.
+- `npm run build`: compila TypeScript y genera `dist/`.
+- `npm run preview`: previsualiza el build.
 - `npm run lint`: ejecuta ESLint.
+- `npm run test:seo`: ejecuta las pruebas del validador SEO/GEO.
+- `npm run seo:check`: valida metadata, assets públicos y separación de rutas indexables.
+
+## Navegación principal
+
+- `/`: landing pública / case study técnico.
+- `/app`: dashboard de la demo KYB.
+- `/app/cases/new`: creación de expediente.
+- `/app/cases/:id`: detalle, evidencia, score y aprobación.
+- `/app/sat/imports`: historial de importaciones SAT.
+
+Las rutas históricas `/cases/new`, `/cases/:id` y `/sat/imports` se conservan como redirects de compatibilidad hacia `/app/**`.
+
+Las rutas operativas se marcan `noindex, nofollow` y no aparecen en el sitemap.
+
+## SEO + GEO
+
+El frontend incluye:
+
+- metadata estática de respaldo en `index.html`;
+- componente `Seo` para metadata por superficie;
+- canonical, Open Graph y Twitter metadata;
+- JSON-LD factual para el proyecto, autor y FAQ;
+- `public/robots.txt`;
+- `public/sitemap.xml` con la ruta pública únicamente;
+- `public/llms.txt` con información factual y limitaciones del proyecto;
+- validación automatizada en `scripts/seo-check.mjs`.
+
+La landing presenta el repositorio como **prueba técnica / implementación demostrativa**, no como un SaaS productivo ni como un servicio oficial del SAT.
 
 ## Estructura principal
 
 ```text
 frontend/
+├─ public/
+│  ├─ robots.txt
+│  ├─ sitemap.xml
+│  └─ llms.txt
+├─ scripts/
+│  ├─ seo-check.mjs
+│  └─ seo-check.test.mjs
 ├─ src/
 │  ├─ api/
-│  │  └─ kybApi.ts
 │  ├─ components/
 │  │  ├─ Layout.tsx
-│  │  ├─ RiskBadge.tsx
-│  │  ├─ RiskFactorsList.tsx
-│  │  ├─ DocumentMetadataForm.tsx
-│  │  ├─ ScoreCard.tsx
-│  │  ├─ AuditLogList.tsx
-│  │  ├─ SatEvidenceList.tsx
+│  │  ├─ Seo.tsx
 │  │  └─ ...
 │  ├─ pages/
+│  │  ├─ LandingPage.tsx
 │  │  ├─ DashboardPage.tsx
 │  │  ├─ CreateCasePage.tsx
 │  │  ├─ CaseDetailPage.tsx
 │  │  └─ SatImportLogsPage.tsx
-│  ├─ types/
-│  │  └─ kyb.ts
-│  ├─ utils/
-│  │  └─ format.ts
 │  ├─ App.tsx
 │  ├─ main.tsx
 │  └─ index.css
+├─ index.html
 ├─ package.json
-└─ vite.config.ts
+└─ vercel.json
 ```
-
-## Navegación principal
-
-- `/`: dashboard de casos.
-- `/cases/new`: creación de expediente KYB.
-- `/cases/:id`: detalle del expediente, evidencia, score y aprobación.
-- `/sat/imports`: historial de importaciones SAT.
-
-Todas las rutas están montadas con React Router y carga diferida (lazy loading) para optimizar el tiempo de primer render.
 
 ## Capa API
 
@@ -97,36 +102,31 @@ Funciones principales del cliente HTTP:
 - `getSatImportLogs`, `runSatImport`
 - `getReportJsonUrl`, `getReportPdfUrl`
 
-La app también ejecuta `wakeUpBackend()` al cargar para reducir latencia inicial en entornos con cold start.
+`wakeUpBackend()` se ejecuta al entrar a la demo operativa, no al visitar la landing pública.
 
 ## Flujo funcional típico
 
-1. Crear un expediente en `/cases/new`.
-2. Capturar metadata documental.
-3. Ejecutar revisión SAT.
-4. Ejecutar cálculo de riesgo.
-5. Revisar factores, evidencia y auditoría.
-6. Aprobar solo si el resultado cumple política.
+1. Abrir `/app`.
+2. Crear un expediente.
+3. Capturar metadata documental.
+4. Ejecutar revisión SAT.
+5. Ejecutar cálculo de riesgo.
+6. Revisar factores, evidencia y auditoría.
+7. Aprobar solo si el resultado cumple la política implementada.
 
-## Ejecución
-
-### Desarrollo
-
-```bash
-npm run dev
-```
-
-### Producción local
+## Verificación
 
 ```bash
+npm run test:seo
+npm run seo:check
+npm run lint
 npm run build
-npm run preview
 ```
 
-## Build de producción y despliegue
+## Despliegue
 
 - Build command: `npm run build`
 - Output directory: `dist/`
-- Variable crítica: `VITE_API_URL`
+- Variables: `VITE_API_URL` y opcionalmente `VITE_SITE_URL`
 
-Para despliegue en Vercel, valida que `VITE_API_URL` apunte al backend publicado.
+En Vercel, `robots.txt`, `sitemap.xml` y `llms.txt` se sirven como assets estáticos y no pasan por el rewrite de la SPA.

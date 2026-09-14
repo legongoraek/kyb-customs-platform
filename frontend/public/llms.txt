@@ -1,0 +1,39 @@
+# KYB Customs Platform
+
+Author: Luis Enrique Góngora Ek
+Project type: technical test / demonstrative case study
+Primary URL: https://kyb-customs-platform.vercel.app/
+Repository: https://github.com/legongoraek/kyb-customs-platform
+Portfolio: https://www.legongoraek.me/
+
+## Purpose
+
+KYB Customs Platform demonstrates a Know Your Business workflow for Mexican foreign-trade scenarios. It models KYB case creation, document-related validation, RFC checks against normalized public fiscal information related to SAT, explainable risk scoring, approval rules, and auditability.
+
+## Demonstrated capabilities
+
+- Create KYB case files for Mexican legal entities.
+- Store auditable document metadata.
+- Detect missing or expired documents.
+- Review RFCs against normalized entries from public SAT-related fiscal sources.
+- Calculate deterministic and explainable risk scores.
+- Classify cases as safe, review_required, or high_risk.
+- Block approval when the result is not safe.
+- Preserve an audit log and evidence of review decisions.
+
+## Technology
+
+Frontend: React, Vite, TypeScript, Tailwind CSS.
+Backend: Node.js, Express, TypeScript.
+Frontend deployment: Vercel.
+Backend deployment: Render.
+
+## Important limitations
+
+This repository is a technical demonstration, not a production SaaS product. It is not an official SAT service, is not affiliated with SAT, and does not claim regulatory certification or complete production compliance coverage. No customer, adoption, performance, or compliance metrics should be inferred from the project.
+
+## Public surfaces
+
+- Case-study landing page: https://kyb-customs-platform.vercel.app/
+- Operational demo: https://kyb-customs-platform.vercel.app/app
+- Source code: https://github.com/legongoraek/kyb-customs-platform

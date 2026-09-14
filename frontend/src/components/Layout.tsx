@@ -1,12 +1,26 @@
+import { useEffect } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ShieldCheck, FilePlus2 } from "lucide-react";
+import { wakeUpBackend } from "../api/kybApi";
+import { Seo } from "./Seo";
 
 export function Layout() {
+  useEffect(() => {
+    wakeUpBackend();
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50">
+      <Seo
+        title="KYB Customs App | Demo operativa"
+        description="Demo operativa de la prueba técnica KYB Customs Platform."
+        path="/app"
+        noIndex
+      />
+
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/app" className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-900 text-white">
               <ShieldCheck size={20} />
             </div>
@@ -15,14 +29,15 @@ export function Layout() {
                 KYB Customs
               </p>
               <p className="hidden text-xs text-slate-500 sm:block">
-                Risk scoring para comercio exterior
+                Demo técnica · Risk scoring para comercio exterior
               </p>
             </div>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-1" aria-label="Navegación de la demo">
             <NavLink
-              to="/"
+              to="/app"
+              end
               className={({ isActive }) =>
                 `rounded-xl px-4 py-2 text-sm font-semibold ${
                   isActive
@@ -35,7 +50,7 @@ export function Layout() {
             </NavLink>
 
             <NavLink
-              to="/sat/imports"
+              to="/app/sat/imports"
               className={({ isActive }) =>
                 `rounded-xl px-4 py-2 text-sm font-semibold ${
                   isActive
@@ -48,7 +63,7 @@ export function Layout() {
             </NavLink>
 
             <NavLink
-              to="/cases/new"
+              to="/app/cases/new"
               className={({ isActive }) =>
                 `inline-flex items-center gap-1 rounded-xl px-4 py-2 text-sm font-semibold ${
                   isActive
