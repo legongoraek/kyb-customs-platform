@@ -25,7 +25,7 @@ async function createFixture() {
   );
   await writeFile(
     join(root, "src", "App.tsx"),
-    'import { LandingPage } from "./pages/LandingPage"; const routes = ["/app", "/cases/new", "/cases/:id", "/sat/imports"];',
+    'import { LandingPage } from "./pages/LandingPage"; const routes = [{ path: "/app" }, "/cases/new", "/cases/:id", "/sat/imports"];',
   );
 
   return root;
